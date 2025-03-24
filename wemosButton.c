@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 
 const char* ssid = "SSID";
 const char* password = "Password";
@@ -18,9 +17,9 @@ void setup() {
 }
 
 void loop() {
-  if (digitalRead(buttonPin) == HIGH) {
-    if (client.connect(serverIP, serverPort)) {
-      client.print("knop ingedrukt\n");
+  if (digitalRead(buttonPin) == HIGH) {          // Wanneer button ingedrukt
+    if (client.connect(serverIP, serverPort)) {  // Connect met Server: RPiA
+      client.print("BUTTON = 1\n");              // Key = value
       client.stop();
     }
     delay(250);
