@@ -1,15 +1,14 @@
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <WiFiServer.h>
 
 const char* ssid = "SSID";
 const char* password = "Password";
 const int serverPort = 12345;
 const int redledPin = D8;
-const int greenledPin = D7;
 
 WiFiServer server(serverPort);
-int ledStatus = 0;
+char key[50];
+int value = 0;
+
 
 void setup() {
   Serial.begin(9600);
@@ -20,20 +19,22 @@ void setup() {
   server.begin();
 }
 
+// Functie voor besturen LED
+void bestuurLED(int pin, int status) {
+  digitalWrite(pin, status);
+}
+
 void loop() {
   WiFiClient client = server.available();
 
   if (client) {
-    String message = client.readStringUntil('\n');
-    message.trim();
-    if (message = "knop ingedrukt") {
-      if (ledStatus == 0) {
-        ledStatus = 1;
-      } else {
-        ledStatus = 0;
+    String input = client.readStringUntil('\n');
+    input.trim();
+    if (sscanf(input.c_str(), "%49[^ = ] = %d", key, &value) == 2) {  // String parsing voor key = value
+      if ((strcmp(key, "LED") == 0) && (value == 1 || value == 0)) {  // Aansturing van besturenLED functie
+        bestuurLED(redledPin, value);
       }
-      digitalWrite(redledPin, ledStatus);
     }
-    client.stop();
   }
+  client.stop();
 }
