@@ -3,4 +3,5 @@ Onderdeel van het Proof of Concept Deel 1: Verbinding tussen de Wemos en de Rasp
 
 Functionaliteit:
 
-*	Button op wemos1 toggelt led op wemos2 via RPiA
+*	Button op wemos1 bestuurd led op wemos2 via RPiA
+*	Encoder wordt uitgelezen en gemiddelde rpm wordt berekend
