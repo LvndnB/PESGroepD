@@ -3,7 +3,8 @@
 const char* ssid = "SSID";
 const char* password = "Password";
 const int serverPort = 12345;
-const int redledPin = D8;
+const int roodledPin = D8;
+const int groenledPin = D7;
 
 WiFiServer server(serverPort);
 char key[50];
@@ -12,8 +13,8 @@ int value = 0;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(redledPin, OUTPUT);
-  pinMode(greenledPin, OUTPUT);
+  pinMode(roodledPin, OUTPUT);
+  pinMode(groenledPin, OUTPUT);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
   server.begin();
@@ -31,8 +32,14 @@ void loop() {
     String input = client.readStringUntil('\n');
     input.trim();
     if (sscanf(input.c_str(), "%49[^ = ] = %d", key, &value) == 2) {  // String parsing voor key = value
-      if ((strcmp(key, "LED") == 0) && (value == 1 || value == 0)) {  // Aansturing van besturenLED functie
-        bestuurLED(redledPin, value);
+      if (value == 1 || value == 0) {                                 // Aansturing van besturenLED functie
+        if (strcmp(key, "DualLEDRood") == 0) {
+          bestuurLED(roodledPin, value);
+        }
+        if (strcmp(key, "DualLEDGroen") == 0) {
+          bestuurLED(groenledPin, value);
+        }
+        
       }
     }
   }
