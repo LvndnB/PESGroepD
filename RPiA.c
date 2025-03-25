@@ -64,12 +64,12 @@ int main()
                 // Led toggle
                 if (ledStatus == 0)
                 {
-                    strcpy(buffer, "LED = 1\n");
+                    strcpy(buffer, "DualLEDRood = 1\n");
                     ledStatus = 1;
                 }
                 else
                 {
-                    strcpy(buffer, "LED = 0\n");
+                    strcpy(buffer, "DualLEDRood = 0\n");
                     ledStatus = 0;
                 }
 
