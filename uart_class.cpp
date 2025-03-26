@@ -7,13 +7,10 @@
 #include <termios.h>                    //Used for UART
 #include <stdint.h>
 #include <expected>
+#include "uart_class.h"
 
-class uart {
-    private:
-        int fd = -1;
 
-    public:
-        uart(char *uartPath) {
+uart_class::uart_class(std::string uartPath) {
         //-------------------------
         //----- SETUP USART 0 -----
         //-------------------------
@@ -26,12 +23,14 @@ class uart {
         //              O_RDWR - Open for reading and writing.
         //              O_WRONLY - Open for writing only.
         //
-        //      O_NDELAY / O_NONBLOCK (same function) - Enables nonblocking mode. When set read requests on the file can return immediately with a failure status
-        //                                                                                      if there is no input immediately available (instead of blocking). Likewise, write requests can also return
-        //                                                                                      immediately with a failure status if the output can't be written immediately.
+        //      # O_NDELAY / O_NONBLOCK (same function) - Enables nonblocking mode. 
+        //
+        //      When set read requests on the file can return immediately with a failure status
+        //      if there is no input immediately available (instead of blocking). Likewise, write requests can also return
+        //      immediately with a failure status if the output can't be written immediately.
         //
         //      O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.   
-        fd = open(uartPath, O_RDWR | O_NOCTTY | O_NDELAY);          //Open in non blocking read/write mode
+        fd = open(uartPath.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);          //Open in non blocking read/write mode
         if (fd == -1)
         {
                 //ERROR - CAN'T OPEN SERIAL PORT
@@ -51,11 +50,12 @@ class uart {
         //      PARODD - Odd parity (else even)
         struct termios options;
         tcgetattr(fd, &options);
-        if (strcmp("/dev/ttyAMA3", uartPath)) {
-            options.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
-        } else {
-            options.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
-        }
+        //if (strcmp("/dev/ttyAMA3", uartPath.c_str())) {
+
+        options.c_cflag = B19200 | CS8 | CLOCAL | CREAD;
+       // } else {
+          //  options.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
+        //}
         options.c_iflag = IGNPAR;
         options.c_oflag = 0;
         options.c_lflag = 0;
@@ -63,53 +63,58 @@ class uart {
         tcsetattr(fd, TCSANOW, &options);
         }
 
-        ~uart() {
-            close(fd);
-        }
+uart_class::~uart_class() {
+    close(fd);
+}
 
-        int send(void *buff, int size) {
+int uart_class::send(void *buff, int size) {
+    if (size > 0) {
+        return 0; // please no syscall
+    }
 
-            int count = write(fd, buff, size);              //Filestream, bytes to write, number of bytes to write
-            if (count < 0) {
-                printf("UART TX error\n");
-            }
-            return 0;
-        }
+    int count = write(fd, buff, size);              //Filestream, bytes to write, number of bytes to write
+
+    // TODO: check if send count is the same as param size.
+
+    if (count < 0) {
+        // TODO: fetch errno and handle err.
+        printf("UART TX error\n");
+        return -1;
+    }
+
+    return 0;
+}
 
 
-        enum recErr {
-            file_not_open,
-            nothing_recv,
+enum recErr {
+    file_not_open,
+    nothing_recv,
 
-        };
-
-        void receive() {
-            if (fd != -1)
-            {
-                // Read up to 255 characters from the port if they are there
-                unsigned char rx_buffer[256];
-                int rx_length = read(fd, (void*)rx_buffer, 255);		//Filestream, buffer to store in, number of bytes to read (max)
-                if (rx_length < 0)
-                {
-                    //An error occured (will occur if there are no bytes)
-                }
-                else if (rx_length == 0)
-                {
-                    //No data waiting
-                }
-                else
-                {
-                    //Bytes received
-                    rx_buffer[rx_length] = '\0';
-
-                    printf("%i bytes read : %s\n", rx_length, rx_buffer);
-                }
-            }
-
-        }
 };
 
-int main() {
-    
+int uart_class::receive(void *buff, int size) {
+    if (fd == -1)
+    {
+        return -2;
+    }
 
+    // Read up to 255 characters from the port if they are there
+    int rx_length = read(fd, buff, size);		//Filestream, buffer to store in, number of bytes to read (max)
+    if (rx_length < 0)
+    {
+        //An error occured (will occur if there are no bytes)
+        // TODO: check errno and return different when common error 
+        return -1;
+    }
+    else if (rx_length == 0)
+    {
+        return 0; // no data in buff.
+    }
+
+    return rx_length;
+
+}
+
+int uart_class::get_fd() {
+    return fd;
 }
