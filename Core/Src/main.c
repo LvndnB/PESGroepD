@@ -61,7 +61,8 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+char rx_data[12] = {0};
+int rx_data_ready = 0;
 /* USER CODE END 0 */
 
 /**
@@ -101,11 +102,22 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_UART_Receive_IT(&huart1, &rx_data, 7);
   while (1)
   {
+	  if (rx_data_ready) {
+		  rx_data_ready = 0;
+		  HAL_UART_Transmit(&huart2, &rx_data, 7, HAL_MAX_DELAY);
+		  // TODO: change
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	 // Sensor data
+	 // TODO: implement sensor data.
+	 HAL_UART_Transmit(&huart1, "test", 4, 400);
+	 //HAL_UART_Transmit(&huart2, "aaaa", 4, HAL_MAX_DELAY);
+
   }
   /* USER CODE END 3 */
 }
@@ -234,7 +246,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -318,7 +330,10 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	rx_data_ready = 1;
+	HAL_UART_Receive_IT(&huart1, &rx_data, 7);
+}
 /* USER CODE END 4 */
 
 /**
