@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/rpib/Documents/pi_b",
+            "binaryPath": "/home/rpib/Documents/pi_b/debug.out",
+            "binaryArgs": []
+        }
+    ]
+}
