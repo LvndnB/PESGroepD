@@ -10,66 +10,69 @@
 #include "uart_class.h"
 
 
-uart_class::uart_class(std::string uartPath) {
-        //-------------------------
-        //----- SETUP USART 0 -----
-        //-------------------------
-        //At bootup, pins 8 and 10 are already set to UART0_TXD, UART0_RXD (ie the alt0 function) respectively
+uart_class::uart_class(std::string uart_path) {
 
-        //OPEN THE UART
-        //The flags (defined in fcntl.h):
-        //      Access modes (use 1 of these):
-        //              O_RDONLY - Open for reading only.
-        //              O_RDWR - Open for reading and writing.
-        //              O_WRONLY - Open for writing only.
+        // uart_path is the uri of the uart. /dev/ttyS0 for uart 1. /dev/ttyAMA3 for uart 3
+        // uart 1 rx is on ip 15 and tx 14.
+        // uart 3 rx is on 14 and  
+        // all the (gpio) pins can be found on https://pinout.xyz/
         //
-        //      # O_NDELAY / O_NONBLOCK (same function) - Enables nonblocking mode. 
-        //
-        //      When set read requests on the file can return immediately with a failure status
-        //      if there is no input immediately available (instead of blocking). Likewise, write requests can also return
-        //      immediately with a failure status if the output can't be written immediately.
-        //
-        //      O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.   
-        fd = open(uartPath.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);          //Open in non blocking read/write mode
+        // O_READONLY Access modes (use 1 of these):
+        // O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
+        fd = open(uart_path.c_str(), O_RDWR | O_NOCTTY);          //Open in non blocking read/write mode
         if (fd == -1)
         {
-                //ERROR - CAN'T OPEN SERIAL PORT
-                printf("Error - Unable to open UART.  Ensure it is not in use by another application\n");
+                printf("Error - Unable to open UART.  Ensure it is not in use by another application\r\nwirering has not been tested\r\n");
                 return;
         }
 
         //CONFIGURE THE UART
-        //The flags (defined in /usr/include/termios.h - see http://pubs.opengroup.org/onlinepubs/007908799/xsh/termios.h.html):
-        //      Baud rate:- B1200, B2400, B4800, B9600, B19200, B38400, B57600, B115200, B230400, B460800, B500000, B576000, B921600, B1000000, B1152000, B1500000, B2000000, B2500000, B3000000, B3500000, B4000000
-        //      CSIZE:- CS5, CS6, CS7, CS8
-        //      CLOCAL - Ignore modem status lines
-        //      CREAD - Enable receiver
-        //      IGNPAR = Ignore characters with parity errors
-        //      ICRNL - Map CR to NL on input (Use for ASCII comms where you want to auto correct end of line characters - don't use for bianry comms!)
-        //      PARENB - Parity enable
-        //      PARODD - Odd parity (else even)
+        // For all options see man://termios(3)
         struct termios options;
         tcgetattr(fd, &options);
-        //if (strcmp("/dev/ttyAMA3", uartPath.c_str())) {
+        
+        cfmakeraw(&options); // RAWDOGING THIS SO READ DON'T HANG BECAUSE we do not use cc chars :). LET ME REPEAT THIS IS NOT A 
+        // raw makes input is available character by character,
+        // echoing is disabled, 
+        // and all special processing of terminal input and output characters is disabled.
+        // The terminal attributes are set as follows: 
+        /// termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+        // termios_p->c_oflag &= ~OPOST;
+        // termios_p->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+        // termios_p->c_cflag &= ~(CSIZE | PARENB);
+        // termios_p->c_cflag |= CS8;
 
-        options.c_cflag = B19200 | CS8 | CLOCAL | CREAD;
-       // } else {
-          //  options.c_cflag = B115200 | CS8 | CLOCAL | CREAD;
-        //}
-        options.c_iflag = IGNPAR;
+
+        int baudspead = B19200;
+        //                baud    | wordlen
+        options.c_cflag = baudspead | CS8 | PARENB;
+        // if PARENB is pressent paraty is on otherwise off.
+        // if PARODD is present parity is odd otherwise it is even.
+
+        options.c_cflag |= (CLOCAL | CREAD); // enable reader and remove modem controls 
+        //options.c_cflag &= ~CRTSCTS; //Disable hardware flow control
+
+        cfsetispeed(&options, baudspead); // baud again
+        cfsetospeed(&options, baudspead);
+        
+        options.c_iflag = IGNPAR; // if parity error remove char.
         options.c_oflag = 0;
         options.c_lflag = 0;
+
+        options.c_cc[VMIN] = 0; // minimal bytes that is needed for the read to finished.
+        options.c_cc[VTIME] = 5; // set read timeout to x/10 sec
         tcflush(fd, TCIFLUSH);
         tcsetattr(fd, TCSANOW, &options);
-        }
+}
 
 uart_class::~uart_class() {
     close(fd);
 }
 
 int uart_class::send(void *buff, int size) {
-    if (size > 0) {
-        return 0; // please no syscall
+    if (size == 0) {
+        printf("no test.");
+        return 0; 
     }
 
     int count = write(fd, buff, size);              //Filestream, bytes to write, number of bytes to write
@@ -82,7 +85,7 @@ int uart_class::send(void *buff, int size) {
         return -1;
     }
 
-    return 0;
+    return count;
 }
 
 
@@ -93,17 +96,21 @@ enum recErr {
 };
 
 int uart_class::receive(void *buff, int size) {
-    if (fd == -1)
-    {
+    if (fd == -1) {
         return -2;
     }
 
-    // Read up to 255 characters from the port if they are there
     int rx_length = read(fd, buff, size);		//Filestream, buffer to store in, number of bytes to read (max)
-    if (rx_length < 0)
-    {
-        //An error occured (will occur if there are no bytes)
+
+    if (rx_length < 0) { // is error
+
+        if (errno == EAGAIN) { // whould block or no data recv
+            return 0; 
+        }
+
         // TODO: check errno and return different when common error 
+
+        printf("Error %d recv\r\n", errno);
         return -1;
     }
     else if (rx_length == 0)
