@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32_tm1637.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define uart_buff_size 50
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,8 +46,15 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+sht3x_handle_t sht3x1;
 
-/* USER CODE END PV */
+uint8_t rx_data_buff[1000] = {0};
+uint8_t *rx_read_ptn = rx_data_buff;
+uint8_t *rx_write_ptn = rx_data_buff;
+uint8_t *rx_data_ready_ptn = 0;
+int rx_data_ready = 0;/* USER CODE END PV */
+
+int rpm = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -56,13 +63,13 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
-
+void parse_data();
+void MX_sht3x_init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-char rx_data[12] = {0};
-int rx_data_ready = 0;
+
 /* USER CODE END 0 */
 
 /**
@@ -97,26 +104,39 @@ int main(void)
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  tm1637Init();
+  MX_sht3x_init(sht3x_handle_t *handle);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_UART_Receive_IT(&huart1, &rx_data, 7);
+  HAL_UART_Receive_IT(&huart1, rx_write_ptn, uart_buff_size);
+  int i = 0;
   while (1)
   {
-	  if (rx_data_ready) {
-		  rx_data_ready = 0;
-		  HAL_UART_Transmit(&huart2, &rx_data, 7, HAL_MAX_DELAY);
-		  // TODO: change
-	  }
+	 if (rx_data_ready) {
+		 parse_data();
+	 }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	 // Sensor data
 	 // TODO: implement sensor data.
-	 HAL_UART_Transmit(&huart1, "test", 4, 400);
+	 //char data[] = "dadada";
+	 float temperature, humidity = 0;
+	 bool res = sht3x_read_temperature_and_humidity(&sht3x1, *temperature, *humidity);
+
+	 char msg[200];
+	 tm1637DisplayDecimal(rpm, 0);
+	 //sprintf(msg, "data = %d\r\n", i);
+	 //HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
+	 //HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
+
+	 //HAL_UART_Transmit(&huart2, data, strlen(data), HAL_MAX_DELAY);
 	 //HAL_UART_Transmit(&huart2, "aaaa", 4, HAL_MAX_DELAY);
+	 HAL_Delay(10);
+	 i++;
 
   }
   /* USER CODE END 3 */
@@ -249,7 +269,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Parity = UART_PARITY_EVEN;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -280,10 +300,10 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 19200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_EVEN;
+  huart2.Init.Parity = UART_PARITY_NONE;
   huart2.Init.Mode = UART_MODE_TX_RX;
   huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart2.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -331,9 +351,43 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	rx_data_ready = 1;
-	HAL_UART_Receive_IT(&huart1, &rx_data, 7);
+	for (int i = 0; i < uart_buff_size; i++) {
+		if (!rx_data_ready && *rx_write_ptn == '\n') {
+			rx_data_ready = 1;
+			//rx_data_ready_ptn = rx_write_ptn;
+		}
+		rx_write_ptn++;
+	}
+
+	if (rx_write_ptn + uart_buff_size > (rx_data_buff)+500 ) {
+		rx_write_ptn = rx_data_buff;
+	}
+
+
+	HAL_UART_Receive_IT(&huart1, rx_write_ptn, uart_buff_size);
 }
+void parse_data() {
+	parse_pdu();
+}
+
+void parse_pdu() {
+	char key[20];
+	char value[20];
+	if (sscanf(rx_data_buff,"%19[^=]=%s[^\n]", key, value) == 2 ) {
+
+		if (!strcmp(key, "ENCODERRPM")) {
+			rpm = atoi(value);
+		}
+	}
+}
+
+void MX_sht3x_init() {
+	sht3x1.i2c_handle = &hi2c1;
+	//sht3x1.device_address = ;
+
+	sht3x_init(&sht3x1);
+}
+
 /* USER CODE END 4 */
 
 /**
