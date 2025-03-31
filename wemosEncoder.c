@@ -1,5 +1,6 @@
+#include <ESP8266WiFi.h>
+
 #define CLK D2  // S1 pin
-#define SW D7   // Key pin
 
 int positie = 0;
 int lastCLK;
@@ -13,12 +14,20 @@ unsigned long positieTeller = 0;     // Telt het aantal posities in de laatste p
 unsigned long lastRPMTime = 0;       // Tijdstip van laatste RPM berekening
 const unsigned long periode = 5000;  // 5 seconden in milliseconden
 
+const char* ssid = "NSELab";
+const char* password = "NSELabWiFi";
+const char* serverIP = "145.52.127.213";  // IP van de Raspberry Pi
+const int serverPort = 12345;
+
+WiFiClient client;
+
 void setup() {
   pinMode(CLK, INPUT_PULLUP);
-  pinMode(SW, INPUT_PULLUP);
   Serial.begin(9600);
   lastCLK = digitalRead(CLK);
   firstTime = millis();  // Stel de starttijd in voor de periode
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) delay(500);
 }
 
 void loop() {
@@ -65,6 +74,13 @@ void loop() {
     Serial.print(rpm);
     Serial.print(" | Gemiddelde RPM: ");
     Serial.println(avgRPM);
+
+    if (client.connect(serverIP, serverPort)) {  // Connect met Server: RPiA
+      char buffer[50];                           // Buffer voor de geformatteerde string
+      sprintf(buffer, "ENCODERRPM=%.2f\n", avgRPM);
+      client.print(buffer);
+      client.stop();
+    }
   }
 
   lastCLK = currentCLK;  // Update de vorige CLK waarde
