@@ -55,10 +55,12 @@ bool sht3x_init(sht3x_handle_t *handle)
 {
 	assert(handle->i2c_handle->Init.NoStretchMode == I2C_NOSTRETCH_DISABLE);
 	// TODO: Assert i2c frequency is not too high
-
 	uint8_t status_reg_and_checksum[3];
-	if (HAL_I2C_Mem_Read(handle->i2c_handle, handle->device_address << 1u, SHT3X_COMMAND_READ_STATUS, 2, (uint8_t*)&status_reg_and_checksum,
-					  sizeof(status_reg_and_checksum), SHT3X_I2C_TIMEOUT) != HAL_OK) {
+
+	HAL_StatusTypeDef res = HAL_I2C_Mem_Read(handle->i2c_handle, handle->device_address << 1u, SHT3X_COMMAND_READ_STATUS, 2, (uint8_t*)&status_reg_and_checksum,
+						  sizeof(status_reg_and_checksum), SHT3X_I2C_TIMEOUT);
+
+	if ( res != HAL_OK) {
 		return false;
 	}
 

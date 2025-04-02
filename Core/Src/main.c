@@ -22,6 +22,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32_tm1637.h"
+#include "sht3x.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,10 +55,12 @@ sht3x_handle_t sht3x1;
 uint8_t rx_data_buff[1000] = {0};
 uint8_t *rx_read_ptn = rx_data_buff;
 uint8_t *rx_write_ptn = rx_data_buff;
-uint8_t *rx_data_ready_ptn = 0;
-int rx_data_ready = 0;/* USER CODE END PV */
 
-int rpm = 0;
+uint8_t rx_data_ready;
+uint8_t *rx_data_ready_ptn = 0;
+
+int rpm;
+/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -64,7 +70,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 void parse_data();
-void MX_sht3x_init();
+bool MX_sht3x_init();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -105,7 +111,14 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   tm1637Init();
-  MX_sht3x_init(sht3x_handle_t *handle);
+  if (!MX_sht3x_init()) {
+
+	  tm1637DisplayDecimal(hi2c1.ErrorCode+400, 0);
+	  HAL_Delay(1000);
+	  MX_sht3x_init();
+  }
+  sht3x_set_header_enable(&sht3x1, 1);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,20 +135,58 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	 // Sensor data
-	 // TODO: implement sensor data.
-	 //char data[] = "dadada";
 	 float temperature, humidity = 0;
-	 bool res = sht3x_read_temperature_and_humidity(&sht3x1, *temperature, *humidity);
+	 bool res = sht3x_read_temperature_and_humidity(&sht3x1, &temperature, &humidity);
+	 int data;
+	 if (res) {
+		 data = temperature;
+	 } else {
+		 data = 1000+hi2c1.ErrorCode;
+		 char error_msg[20];
+		 sprintf(error_msg, "%d",hi2c1.ErrorCode);
+		 HAL_UART_Transmit(&huart2, error_msg, strlen(error_msg), 5000);
+		 HAL_Delay(3);
 
-	 char msg[200];
-	 tm1637DisplayDecimal(rpm, 0);
-	 //sprintf(msg, "data = %d\r\n", i);
-	 //HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
-	 //HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_BERR )) {
+			 	HAL_UART_Transmit(&huart2, " BERR ", 6, 5000 );
+		 }    /*!< BERR error            */
 
-	 //HAL_UART_Transmit(&huart2, data, strlen(data), HAL_MAX_DELAY);
-	 //HAL_UART_Transmit(&huart2, "aaaa", 4, HAL_MAX_DELAY);
-	 HAL_Delay(10);
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_AF)) {//ACKF error
+		 	HAL_UART_Transmit(&huart2, " ACK ", 5, 5000 );
+		 }
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_ARLO)) {
+		 	HAL_UART_Transmit(&huart2, " ARLO ", 6, 5000 );
+		 }
+		 if (hi2c1.ErrorCode & ( HAL_I2C_ERROR_OVR)) {
+			 	HAL_UART_Transmit(&huart2, " OVR ", 5, 5000 );
+		 }    /*!< OVR error             */
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA)) {
+			 	HAL_UART_Transmit(&huart2, " DMA tra ", 9, 5000 );
+
+		 }    /*!< DMA transfer error    */
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_TIMEOUT )) {
+			 	HAL_UART_Transmit(&huart2, " timeout ", 9, 5000 );
+		 }    /*!< Timeout error         */
+
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_SIZE)) {
+			 	HAL_UART_Transmit(&huart2, " size ", 6, 5000 );
+		 }    /*!< Size Management error */
+
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA_PARAM)) {
+			 	HAL_UART_Transmit(&huart2, " DMA par ", 9, 5000 );
+		 }    /*!< DMA Parameter Error   */
+
+		 HAL_UART_Transmit(&huart2, "\r\n", 2, 5000 );
+
+	 }
+
+
+
+	 char msa[20] = {0};
+	 //sprintf(msa, "%d\r\n", hi2c1.ErrorCode);
+	 //HAL_UART_Transmit(&huart2, msa, strlen(msa), 5000 );
+	 tm1637DisplayDecimal(data, 0);
+	 HAL_Delay(10000);
 	 i++;
 
   }
@@ -218,7 +269,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00707CBB;
+  hi2c1.Init.Timing = 0x00300F38;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -366,10 +417,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	HAL_UART_Receive_IT(&huart1, rx_write_ptn, uart_buff_size);
 }
-void parse_data() {
-	parse_pdu();
-}
-
 void parse_pdu() {
 	char key[20];
 	char value[20];
@@ -380,12 +427,18 @@ void parse_pdu() {
 		}
 	}
 }
+void parse_data() {
+	parse_pdu();
+}
 
-void MX_sht3x_init() {
+
+bool MX_sht3x_init() {
 	sht3x1.i2c_handle = &hi2c1;
+	sht3x1.device_address = 0x44;
 	//sht3x1.device_address = ;
 
-	sht3x_init(&sht3x1);
+	return sht3x_init(&sht3x1);
+
 }
 
 /* USER CODE END 4 */
