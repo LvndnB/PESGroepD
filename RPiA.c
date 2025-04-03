@@ -31,41 +31,6 @@ void encoderRPMWemosRecieve()
         }
 }
 
-void buttonWemosRecieve()
-{
-    if ((strcmp(value, "1") == 0))
-    {
-
-        // Vragen om connectie met server: wemosLED
-        int wemosLED_fd = socket(AF_INET, SOCK_STREAM, 0);
-        struct sockaddr_in wemosLED_addr;
-        wemosLED_addr.sin_family = AF_INET;
-        wemosLED_addr.sin_port = htons(PORT);
-        inet_pton(AF_INET, WEMOSLED_IP, &wemosLED_addr.sin_addr); // IP van wemosLED
-
-        // Led toggle
-        int ledStatus = 0;
-        if (ledStatus == 0)
-        {
-            strcpy(buffer, "DualLEDRood=1\n");
-            ledStatus = 1;
-        }
-        else
-        {
-            strcpy(buffer, "DualLEDRood=0\n");
-            ledStatus = 0;
-        }
-
-        // Zenden naar server: wemosLED
-        if (connect(wemosLED_fd, (struct sockaddr *)&wemosLED_addr, sizeof(wemosLED_addr)) == 0)
-        {
-            send(wemosLED_fd, buffer, strlen(buffer), 0);
-            close(wemosLED_fd);
-        }
-    }
-}
-
-
 void encoderStatusWemosRecieve() { 
 
 
