@@ -53,7 +53,7 @@ UART_HandleTypeDef huart2;
 sht3x_handle_t sht3x1;
 
 uint8_t rx_data_buff[1000] = {0};
-uint8_t *rx_read_ptn = rx_data_buff;
+unsigned char *rx_read_ptn = rx_data_buff;
 uint8_t *rx_write_ptn = rx_data_buff;
 
 uint8_t rx_data_ready;
@@ -158,22 +158,22 @@ int main(void)
 		 	HAL_UART_Transmit(&huart2, " ARLO ", 6, 5000 );
 		 }
 		 if (hi2c1.ErrorCode & ( HAL_I2C_ERROR_OVR)) {
-			 	HAL_UART_Transmit(&huart2, " OVR ", 5, 5000 );
+			 HAL_UART_Transmit(&huart2, " OVR ", 5, 5000 );
 		 }    /*!< OVR error             */
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA)) {
-			 	HAL_UART_Transmit(&huart2, " DMA tra ", 9, 5000 );
+			 HAL_UART_Transmit(&huart2, " DMA tra ", 9, 5000 );
 
 		 }    /*!< DMA transfer error    */
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_TIMEOUT )) {
-			 	HAL_UART_Transmit(&huart2, " timeout ", 9, 5000 );
+			 HAL_UART_Transmit(&huart2, " timeout ", 9, 5000 );
 		 }    /*!< Timeout error         */
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_SIZE)) {
-			 	HAL_UART_Transmit(&huart2, " size ", 6, 5000 );
+			 HAL_UART_Transmit(&huart2, " size ", 6, 5000 );
 		 }    /*!< Size Management error */
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA_PARAM)) {
-			 	HAL_UART_Transmit(&huart2, " DMA par ", 9, 5000 );
+			 HAL_UART_Transmit(&huart2, " DMA par ", 9, 5000 );
 		 }    /*!< DMA Parameter Error   */
 
 		 HAL_UART_Transmit(&huart2, "\r\n", 2, 5000 );
@@ -182,11 +182,11 @@ int main(void)
 
 
 
-	 char msa[20] = {0};
+	 //char msa[20] = {0};
 	 //sprintf(msa, "%d\r\n", hi2c1.ErrorCode);
 	 //HAL_UART_Transmit(&huart2, msa, strlen(msa), 5000 );
-	 tm1637DisplayDecimal(data, 0);
-	 HAL_Delay(10000);
+	 tm1637DisplayDecimal(rpm, 1);
+	 HAL_Delay(100);
 	 i++;
 
   }
@@ -401,32 +401,48 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void parse_pdu();
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	for (int i = 0; i < uart_buff_size; i++) {
-		if (!rx_data_ready && *rx_write_ptn == '\n') {
-			rx_data_ready = 1;
-			//rx_data_ready_ptn = rx_write_ptn;
-		}
-		rx_write_ptn++;
-	}
+    // Restart the UART receive interrupt immediately
+    HAL_UART_Receive_IT(&huart1, rx_data_buff, 50);
+	parse_pdu();
 
-	if (rx_write_ptn + uart_buff_size > (rx_data_buff)+500 ) {
-		rx_write_ptn = rx_data_buff;
-	}
+//    for (int i = 0; i < uart_buff_size; i++) {
+    // Check for message termination (newline) and set flag
+    //	if (*rx_write_ptn == '\n') {
+  //  		rx_data_ready = 1;
+    		// *rx_write_ptn = '\0';  // Null-terminate the message
+    	//	rx_read_ptn = 0;
+    //		rx_data_ready = 0;
+    	//}
 
-
-	HAL_UART_Receive_IT(&huart1, rx_write_ptn, uart_buff_size);
+    	// Move the write pointer forward and wrap around if necessary
+    //	rx_write_ptn++;
+    	//if (rx_write_ptn >= rx_data_buff + uart_buff_size) {
+    //		rx_write_ptn = rx_data_buff;
+    	//}
+    //}
+	memset(rx_data_buff, 0, 50);
 }
+
 void parse_pdu() {
-	char key[20];
-	char value[20];
-	if (sscanf(rx_data_buff,"%19[^=]=%s[^\n]", key, value) == 2 ) {
+    char key[20];
+    char value[20];
 
-		if (!strcmp(key, "ENCODERRPM")) {
-			rpm = atoi(value);
-		}
-	}
+    if (sscanf((char *)rx_data_buff, "%19[^=]=%19[^\n]", key, value) == 2) {
+        int size = strlen(key) + strlen(value) + 2;  // Key=Value + newline
+        rx_read_ptn += size;
+        if (rx_read_ptn >= rx_data_buff + uart_buff_size) {
+            rx_read_ptn = rx_data_buff;
+        }
+
+        if (strcmp(key, "ENCODERRPM") == 0) {
+            rpm = atof(value) * 100;
+        }
+    }
 }
+
 void parse_data() {
 	parse_pdu();
 }
