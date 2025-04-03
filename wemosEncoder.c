@@ -14,9 +14,13 @@ unsigned long positieTeller = 0;     // Telt het aantal posities in de laatste p
 unsigned long lastRPMTime = 0;       // Tijdstip van laatste RPM berekening
 const unsigned long periode = 5000;  // 5 seconden in milliseconden
 
-const char* ssid = "NSELab";
-const char* password = "NSELabWiFi";
-const char* serverIP = "145.52.127.213";  // IP van de Raspberry Pi
+int isMoving = 0;
+int rpmreset = 0;
+unsigned long laatsteBeweging = 0;
+
+const char* ssid = "Revalidatie";
+const char* password = "Revalidatie";
+const char* serverIP = "192.168.0.101";  // IP van de Raspberry Pi
 const int serverPort = 12345;
 
 WiFiClient client;
@@ -25,7 +29,9 @@ void setup() {
   pinMode(CLK, INPUT_PULLUP);
   Serial.begin(9600);
   lastCLK = digitalRead(CLK);
-  firstTime = millis();  // Stel de starttijd in voor de periode
+  firstTime = millis();        // Stel de starttijd in voor de periode
+  laatsteBeweging = millis();  // Tijd sinds de laatste beweging
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
 }
@@ -75,6 +81,22 @@ void loop() {
     Serial.print(" | Gemiddelde RPM: ");
     Serial.println(avgRPM);
 
+    // Controleer of de encoder net is gestart met bewegen
+    if (!isMoving) {
+      isMoving = 1;
+      if (client.connect(serverIP, serverPort)) {
+        char buffer[50];
+        sprintf(buffer, "ENCODER_STATUS=1\n");
+        client.print(buffer);
+        client.stop();
+        Serial.println("Status=1");
+      }
+    }
+
+    laatsteBeweging = millis();  // Reset de stilstandtimer
+    rpmreset = 0;
+
+
     if (client.connect(serverIP, serverPort)) {  // Connect met Server: RPiA
       char buffer[50];                           // Buffer voor de geformatteerde string
       sprintf(buffer, "ENCODERRPM=%.2f\n", avgRPM);
@@ -82,6 +104,33 @@ void loop() {
       client.stop();
     }
   }
+
+  if (isMoving && !rpmreset && (millis() - laatsteBeweging > 1000)) {
+    if (client.connect(serverIP, serverPort)) {
+      char buffer[50];
+      sprintf(buffer, "ENCODERRPM=0\n");
+      client.print(buffer);
+      client.stop();
+    }
+    rpmreset = 1;
+  }
+
+  // Controleer of de encoder 5 seconden niet heeft bewogen
+  if (isMoving && (millis() - laatsteBeweging > 5000)) {
+    isMoving = 0;
+    if (client.connect(serverIP, serverPort)) {
+      char buffer[50];
+      sprintf(buffer, "ENCODER_STATUS=0\n");
+      client.print(buffer);
+      client.stop();
+      Serial.println("Status=0");
+    }
+    
+  }
+
+  
+
+  
 
   lastCLK = currentCLK;  // Update de vorige CLK waarde
 }
