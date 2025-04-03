@@ -6,14 +6,14 @@
 
 #define PORT 12345
 #define BUFFER_SIZE 1024
-#define WEMOSLED_IP "192.168.1.172"
-#define RPIB_IP "145.52.127.217"
+#define WEMOSLED_IP "192.168.0.105"
+#define RPIB_IP "192.168.0.104"
 
 char buffer[BUFFER_SIZE];
 char key[50];
 char value[20];
 
-void encoderWemosRecieve()
+void encoderRPMWemosRecieve()
 {
     float encoderValue = atof(value);
 
@@ -65,6 +65,38 @@ void buttonWemosRecieve()
     }
 }
 
+
+void encoderStatusWemosRecieve() { 
+
+
+        // Vragen om connectie met server: wemosLED
+        int wemosLED_fd = socket(AF_INET, SOCK_STREAM, 0);
+        struct sockaddr_in wemosLED_addr;
+        wemosLED_addr.sin_family = AF_INET;
+        wemosLED_addr.sin_port = htons(PORT);
+        inet_pton(AF_INET, WEMOSLED_IP, &wemosLED_addr.sin_addr); // IP van wemosLED
+
+        // Led
+        if (strcmp(value, "1"))
+        {
+            strcpy(buffer, "DUALLEDGROEN=1\n");
+    
+        }
+        else if (strcmp(value, "0"))
+        {
+            strcpy(buffer, "DUALLEDGROEN=0\n");
+        }
+
+        // Zenden naar server: wemosLED
+        if (connect(wemosLED_fd, (struct sockaddr *)&wemosLED_addr, sizeof(wemosLED_addr)) == 0)
+        {
+            send(wemosLED_fd, buffer, strlen(buffer), 0);
+            close(wemosLED_fd);
+        }
+    
+        
+}
+
 int main()
 {
     // Initialiseren listen socket
@@ -106,13 +138,13 @@ int main()
 
             if ((strcmp(key, "ENCODERRPM") == 0))
             {
-                encoderWemosRecieve();
+                encoderRPMWemosRecieve();
                 printf("Verzonden naar %s: %s=%s\n", RPIB_IP, key, value);
             }
 
-            if ((strcmp(key, "BUTTON") == 0)) // Key connectie = BUTTON
+            if ((strcmp(key, "ENCODER_STATUS") == 0)) 
             {
-                buttonWemosRecieve();
+                encoderStatusWemosRecieve();
                 printf("Verzonden naar %s: %s=%s\n", WEMOSLED_IP, key, value);
             }
 
