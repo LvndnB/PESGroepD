@@ -33,7 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SGP30_ADDRESS  (0x58 << 1)  // 7-bit I2C adres verschoven voor HAL
+#define SGP30_ADDRESS  (0x58 << 1)  
 #define CMD_INIT_AIR_QUALITY  {0x20, 0x03}   // Init commando
 #define CMD_MEASURE_AIR_QUALITY {0x20, 0x08} // Meet commando
 #define CMD_GET_FEATURES  {0x20, 0x2F}
@@ -64,10 +64,13 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Init voor de SGP30 Sensor
 void SGP30_Init(void) {
     uint8_t command[] = CMD_INIT_AIR_QUALITY;
     HAL_I2C_Master_Transmit(&hi2c1, SGP30_ADDRESS, command, sizeof(command), HAL_MAX_DELAY);
 }
+
+// Aflezen waarden CO2 sensor
 uint16_t SGP30_ReadCO2(void) {
     uint8_t command[] = CMD_MEASURE_AIR_QUALITY;
     uint8_t buffer[6];  // Data buffer (CO₂eq, TVOC)
@@ -76,12 +79,16 @@ uint16_t SGP30_ReadCO2(void) {
     HAL_Delay(12);  // Sensor heeft 12ms nodig voor meting
     HAL_I2C_Master_Receive(&hi2c1, SGP30_ADDRESS, buffer, sizeof(buffer), HAL_MAX_DELAY);
 
-    uint16_t co2_value = (buffer[0] << 8) | buffer[1];  // CO₂eq waarde
+    uint16_t co2_value = (buffer[0] << 8) | buffer[1];  // Omzetten bytes naar enkele 16-bit waarden
     return co2_value;
 }
+
+// Functie voor terminal printen
 void UART_Print(const char *str) {
     HAL_UART_Transmit(&huart2, (uint8_t*)str, strlen(str), HAL_MAX_DELAY);
 }
+
+// Verbinding checken met SGP30 sensor
 uint8_t SGP30_CheckConnection(void) {
     uint8_t command[] = CMD_GET_FEATURES;
     uint8_t response[3] = {0};
@@ -106,7 +113,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	  char uart_buffer[50];    // Buffer voor de string om de CO2 waarde naar UART te sturen
+	  char uart_buffer[50];    
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -130,24 +137,27 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+  // Als sensor niet gevonden, stop
   if (!SGP30_CheckConnection()) {
           UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
-          while (1); // Stop programma als sensor ontbreekt
+          while (1); 
       }
 
+  // Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
       UART_Print("CO2 sensor gedetecteerd!\r\n");
       SGP30_Init();
-      HAL_Delay(15000);  // Wacht 15 sec voor stabiele metingen
+      HAL_Delay(15000);  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  // Print de CO2 waarden iedere seconde op de terminal
   while (1)
   {
 	          uint16_t co2 = SGP30_ReadCO2();
 	          int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
 	          HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-	          HAL_Delay(1000);  // Wacht 1 seconde
+	          HAL_Delay(1000); 
   }
     /* USER CODE END WHILE */
 
