@@ -34,9 +34,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define SGP30_ADDRESS  (0x58 << 1)  
-#define CMD_INIT_AIR_QUALITY  {0x20, 0x03}   // Init commando
-#define CMD_MEASURE_AIR_QUALITY {0x20, 0x08} // Meet commando
-#define CMD_GET_FEATURES  {0x20, 0x2F}
+#define CMD_INIT_AIR_QUALITY  {0x20, 0x03}   // Starten van metingen
+#define CMD_MEASURE_AIR_QUALITY {0x20, 0x08} // Metingen uitvoeren
+#define CMD_GET_FEATURES  {0x20, 0x2F} // Check of sensor bereikbaar is, info ophalen
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
