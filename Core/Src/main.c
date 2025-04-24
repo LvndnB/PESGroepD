@@ -52,9 +52,10 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 sht3x_handle_t sht3x1;
 
-uint8_t rx_data_buff[1000] = {0};
-unsigned char *rx_read_ptn = rx_data_buff;
-uint8_t *rx_write_ptn = rx_data_buff;
+// basic moving buffer for processing
+uint8_t rxDataBuff[1000] = {0};
+uint8_t *busRxReadPtr = rxDataBuff;
+uint8_t *busRxWritePtr = rxDataBuff;
 
 uint8_t rx_data_ready;
 uint8_t *rx_data_ready_ptn = 0;
@@ -117,34 +118,32 @@ int main(void)
 	  HAL_Delay(1000);
 	  MX_sht3x_init();
   }
-  sht3x_set_header_enable(&sht3x1, 1);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_UART_Receive_IT(&huart1, rx_write_ptn, uart_buff_size);
-  int i = 0;
+  HAL_UART_Receive_IT(&huart1, busRxWritePtr, uart_buff_size);
+  int loopCounter = 0;
   while (1)
   {
-	 if (rx_data_ready) {
-		 parse_data();
-	 }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	 // Sensor data
 	 float temperature, humidity = 0;
-	 bool res = sht3x_read_temperature_and_humidity(&sht3x1, &temperature, &humidity);
-	 int data;
-	 if (res) {
-		 data = temperature;
+	 bool success = sht3x_read_temperature_and_humidity(&sht3x1, &temperature, &humidity);
+
+	 int displayContent;
+	 if (success) {
+		 displayContent = temperature;
 	 } else {
-		 data = 1000+hi2c1.ErrorCode;
-		 char error_msg[20];
-		 sprintf(error_msg, "%d",hi2c1.ErrorCode);
-		 HAL_UART_Transmit(&huart2, error_msg, strlen(error_msg), 5000);
+		 displayContent = 1000+hi2c1.ErrorCode;
+
+		 // the following is reporting the error details over usb for debugging case
+		 char errorMsg[20];
+		 sprintf(errorMsg, "%d",hi2c1.ErrorCode);
+		 HAL_UART_Transmit(&huart2, errorMsg, strlen(errorMsg), 5000);
 		 HAL_Delay(3);
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_BERR )) {
@@ -159,36 +158,29 @@ int main(void)
 		 }
 		 if (hi2c1.ErrorCode & ( HAL_I2C_ERROR_OVR)) {
 			 HAL_UART_Transmit(&huart2, " OVR ", 5, 5000 );
-		 }    /*!< OVR error             */
-		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA)) {
+		 }
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA)) {  /// DMA transfer error
 			 HAL_UART_Transmit(&huart2, " DMA tra ", 9, 5000 );
-
-		 }    /*!< DMA transfer error    */
+		 }
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_TIMEOUT )) {
 			 HAL_UART_Transmit(&huart2, " timeout ", 9, 5000 );
-		 }    /*!< Timeout error         */
-
-		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_SIZE)) {
+		 }
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_SIZE)) { /// Size Management error
 			 HAL_UART_Transmit(&huart2, " size ", 6, 5000 );
-		 }    /*!< Size Management error */
-
-		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA_PARAM)) {
+		 }
+		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_DMA_PARAM)) { // DMA Parameter Error
 			 HAL_UART_Transmit(&huart2, " DMA par ", 9, 5000 );
-		 }    /*!< DMA Parameter Error   */
+		 }    /*!<    */
 
 		 HAL_UART_Transmit(&huart2, "\r\n", 2, 5000 );
 
-	 }
+	 } // end of if success
 
-
-
-	 //char msa[20] = {0};
-	 //sprintf(msa, "%d\r\n", hi2c1.ErrorCode);
-	 //HAL_UART_Transmit(&huart2, msa, strlen(msa), 5000 );
+	 // Set data to display
 	 tm1637DisplayDecimal(rpm, 1);
-	 HAL_Delay(100);
-	 i++;
 
+	 HAL_Delay(100);
+	 loop_counter++;
   }
   /* USER CODE END 3 */
 }
@@ -412,29 +404,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
     // Check for message termination (newline) and set flag
     //	if (*rx_write_ptn == '\n') {
   //  		rx_data_ready = 1;
-    		// *rx_write_ptn = '\0';  // Null-terminate the message
+    		// *busRxWritePtr = '\0';  // Null-terminate the message
     	//	rx_read_ptn = 0;
     //		rx_data_ready = 0;
     	//}
 
     	// Move the write pointer forward and wrap around if necessary
     //	rx_write_ptn++;
-    	//if (rx_write_ptn >= rx_data_buff + uart_buff_size) {
-    //		rx_write_ptn = rx_data_buff;
+    	//if (busRxWritePtr >= rxDataBuff + uart_buff_size) {
+    //		busRxWritePtr = rxDataBuff;
     	//}
     //}
-	memset(rx_data_buff, 0, 50);
+	memset(rxDataBuff, 0, 50);
 }
 
 void parse_pdu() {
     char key[20];
     char value[20];
 
-    if (sscanf((char *)rx_data_buff, "%19[^=]=%19[^\n]", key, value) == 2) {
+    if (sscanf((char *)rxDataBuff, "%19[^=]=%19[^\n]", key, value) == 2) {
         int size = strlen(key) + strlen(value) + 2;  // Key=Value + newline
-        rx_read_ptn += size;
-        if (rx_read_ptn >= rx_data_buff + uart_buff_size) {
-            rx_read_ptn = rx_data_buff;
+        busRxReadPtr += size;
+        if (busRxReadPtr >= rxDataBuff + uart_buff_size) {
+            busRxReadPtr = rxDataBuff;
         }
 
         if (strcmp(key, "ENCODERRPM") == 0) {
