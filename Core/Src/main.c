@@ -166,6 +166,7 @@ int main(void)
   uint8_t procindex = 0;
   while (1)
   {
+
 	  // procflow
 	  if (huart1.Instance->CR1 & USART_CR1_TE) {
 		  for (int i = 0; i < 10; i++) {
@@ -495,14 +496,7 @@ void parse_pdu() {
 
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	//
-    int is_id_found =  (huart->Instance->ISR & USART_ISR_CMF_Msk) && 1;
-	//HAL_UART_Transmit(&huart1, is_id_found?"yes\0":"NO\0\0" , 4, 5000);
-	// Always listening :3
-	// HAL_UART_Receive_IT(&huart1, rxDataBuff, 50);
-
 	parse_pdu();
-
 	memset(rxDataBuff, 0, 50);
 }
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
@@ -511,24 +505,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 
 }
 
-void echoFound() {
-	uint8_t msg = 20;
-	HAL_UART_Transmit(&huart1, &msg, 1, 1000);
-	//char msg[8];
-	//if (is_id_found) {
-	//	char m[] = "yes";
-    //		HAL_UART_Transmit(&huart1, m, strlen(m), 5000);
-	//	HAL_UART_Transmit(&huart1, m, strlen(m), 5000);
-	//	__HAL_UART_GET_FLAG
-	//	USART_Fl
-	//} else {
-	//	char m[] = "Ea quis consequatur fugiat ut. Rerum doloremque est qui in minus doloremque rerum aut. Culpa maxime officiis dolore ad at sed ut.\n\r Nemo fugiat a dolorem. Vel voluptatum quis beatae dolorem aut animi ut. Sit incidunt numquam ea inventore reiciendis. Sed et quia nostrum libero enim laudantium. Voluptatem voluptatem sed magni eum illum exercitationem.\n\r Alias saepe quaerat laborum sit. Ipsa quia molestiae quidem non quidem non at est. Esse neque harum voluptas voluptatibus ut commodi repellat. Doloribus et natus ut. Voluptatem enim sed aliquam et voluptatibus sint doloribus quo. Repellendus laboriosam libero et aut quam at exercitationem error. Qui nulla illo suscipit ut nulla nulla.\n\r\n\r\n\r";
-	//	uint8_t a = 0b1011011;
-	//	HAL_UART_Transmit(&huart1, &a , 2, 5000);
-	//	HAL_UART_Transmit(&huart1, m, strlen(m), HAL_MAX_DELAY);
-
-	//}
-}
 
 bool MX_sht3x_init() {
 	sht3x1.i2c_handle = &hi2c1;
