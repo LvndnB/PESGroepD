@@ -31,11 +31,17 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#ifndef userVarables
+#define userVarables
+
+extern int WowKanDit;
+extern int loopCounter;
+#endif
+
 
 /* USER CODE END ET */
 

@@ -15,12 +15,12 @@ void _tm1637DioLow(void);
 
 // Configuration.
 
-#define CLK_PORT GPIOB
-#define DIO_PORT GPIOB
-#define CLK_PIN GPIO_PIN_5
-#define DIO_PIN GPIO_PIN_4
-#define CLK_PORT_CLK_ENABLE __HAL_RCC_GPIOC_CLK_ENABLE
-#define DIO_PORT_CLK_ENABLE __HAL_RCC_GPIOC_CLK_ENABLE
+#define CLK_PORT GPIOA
+#define DIO_PORT GPIOA
+#define CLK_PIN GPIO_PIN_4
+#define DIO_PIN GPIO_PIN_5
+#define CLK_PORT_CLK_ENABLE __HAL_RCC_GPIOA_CLK_ENABLE
+#define DIO_PORT_CLK_ENABLE __HAL_RCC_GPIOA_CLK_ENABLE
 
 
 const char segmentMap[] = {

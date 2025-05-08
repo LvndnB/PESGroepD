@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define uart_buff_size 50
+#define uart_buff_size 800
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,6 +48,7 @@ I2C_HandleTypeDef hi2c1;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
 sht3x_handle_t sht3x1;
@@ -56,9 +57,21 @@ sht3x_handle_t sht3x1;
 uint8_t rxDataBuff[1000] = {0};
 uint8_t *busRxReadPtr = rxDataBuff;
 uint8_t *busRxWritePtr = rxDataBuff;
+int WowKanDit = 3;
+
+
+int loopCounter = 0;
 
 uint8_t rx_data_ready;
 uint8_t *rx_data_ready_ptn = 0;
+
+enum {
+	idle,
+	addressed,
+	Speaking,
+	Listening,
+} ProcmosState = idle;
+
 
 int rpm;
 /* USER CODE END PV */
@@ -66,6 +79,7 @@ int rpm;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
@@ -107,6 +121,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
   MX_I2C1_Init();
@@ -114,19 +129,65 @@ int main(void)
   tm1637Init();
   if (!MX_sht3x_init()) {
 
-	  tm1637DisplayDecimal(hi2c1.ErrorCode+400, 0);
+	  tm1637DisplayDecimal(hi2c1.ErrorCode+1000, 0);
 	  HAL_Delay(1000);
 	  MX_sht3x_init();
   }
+
+  // ps. not all registers should be disabled when uart isn't running.
+  // i'm doing it so because it is a nice order. For details of what each registry
+  // does please refer to the Reference Manual.
+
+  huart1.Instance->CR1 &= ~USART_CR1_RE; // shut down read
+  huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
+
+  // ability for uart to go to mute mode (Mute Mode Enable)
+  huart1.Instance->CR1 |= USART_CR1_MME;
+
+  uint8_t address = 0x20;
+  huart1.Instance->CR2 &= ~USART_CR2_ADD_Msk; // set addr to 0
+  huart1.Instance->CR2 |= address << USART_CR2_ADD_Pos; // set addr
+
+  huart1.Instance->CR1 |= USART_CR1_WAKE; // set wake method to that id is found.
+                                          // if set to 0 the uart wakes when line is down.
+
+  huart1.Instance->CR1 |= USART_CR1_RE; //enable read
+  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
+  huart1.Instance->CR1 |= USART_CR1_UE; // power on
+
+
+  huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (based on addr)
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_UART_Receive_IT(&huart1, busRxWritePtr, uart_buff_size);
-  int loopCounter = 0;
+  // loop counters
+  uint8_t procindex = 0;
   while (1)
   {
+	  // procflow
+	  if (huart1.Instance->CR1 & USART_CR1_TE) {
+		  for (int i = 0; i < 10; i++) {
+			  HAL_UART_Transmit(&huart1, &procindex, 1, 100);
+		  }
+
+
+		  HAL_Delay(70);
+		  procindex++;
+
+		  if (procindex > 7) {
+			  huart1.Instance->CR1 &= ~USART_CR1_TE; // power off transmitter
+			  procindex = 0;
+		  }
+		  continue;
+	  }
+
+	  // make sure that the char match interrupt is on when waiting.
+	  if ((huart1.Instance->CR1 & USART_CR1_TE) == 0) {
+		  huart1.Instance->CR1 |= USART_CR1_CMIE;
+		  //huart1.Lock
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -147,7 +208,7 @@ int main(void)
 		 HAL_Delay(3);
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_BERR )) {
-			 	HAL_UART_Transmit(&huart2, " BERR ", 6, 5000 );
+			HAL_UART_Transmit(&huart2, " BERR ", 6, 5000 );
 		 }    /*!< BERR error            */
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_AF)) {//ACKF error
@@ -177,10 +238,13 @@ int main(void)
 	 } // end of if success
 
 	 // Set data to display
-	 tm1637DisplayDecimal(rpm, 1);
+	 tm1637DisplayDecimal(displayContent, 1);
 
-	 HAL_Delay(100);
-	 loop_counter++;
+	 HAL_Delay(10);
+	 loopCounter++;
+	 char buffer[200] = {0};
+
+	 echoFound();
   }
   /* USER CODE END 3 */
 }
@@ -261,7 +325,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00300F38;
+  hi2c1.Init.Timing = 0x20202E44;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -363,6 +427,22 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -393,30 +473,8 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void parse_pdu();
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    // Restart the UART receive interrupt immediately
-    HAL_UART_Receive_IT(&huart1, rx_data_buff, 50);
-	parse_pdu();
 
-//    for (int i = 0; i < uart_buff_size; i++) {
-    // Check for message termination (newline) and set flag
-    //	if (*rx_write_ptn == '\n') {
-  //  		rx_data_ready = 1;
-    		// *busRxWritePtr = '\0';  // Null-terminate the message
-    	//	rx_read_ptn = 0;
-    //		rx_data_ready = 0;
-    	//}
-
-    	// Move the write pointer forward and wrap around if necessary
-    //	rx_write_ptn++;
-    	//if (busRxWritePtr >= rxDataBuff + uart_buff_size) {
-    //		busRxWritePtr = rxDataBuff;
-    	//}
-    //}
-	memset(rxDataBuff, 0, 50);
-}
 
 void parse_pdu() {
     char key[20];
@@ -435,10 +493,42 @@ void parse_pdu() {
     }
 }
 
-void parse_data() {
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	//
+    int is_id_found =  (huart->Instance->ISR & USART_ISR_CMF_Msk) && 1;
+	//HAL_UART_Transmit(&huart1, is_id_found?"yes\0":"NO\0\0" , 4, 5000);
+	// Always listening :3
+	// HAL_UART_Receive_IT(&huart1, rxDataBuff, 50);
+
 	parse_pdu();
+
+	memset(rxDataBuff, 0, 50);
+}
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+	HAL_UART_Transmit(&huart1, rxDataBuff, Size, HAL_MAX_DELAY);
+	HAL_UARTEx_ReceiveToIdle_IT(&huart1, rxDataBuff, uart_buff_size);
+
 }
 
+void echoFound() {
+	uint8_t msg = 20;
+	HAL_UART_Transmit(&huart1, &msg, 1, 1000);
+	//char msg[8];
+	//if (is_id_found) {
+	//	char m[] = "yes";
+    //		HAL_UART_Transmit(&huart1, m, strlen(m), 5000);
+	//	HAL_UART_Transmit(&huart1, m, strlen(m), 5000);
+	//	__HAL_UART_GET_FLAG
+	//	USART_Fl
+	//} else {
+	//	char m[] = "Ea quis consequatur fugiat ut. Rerum doloremque est qui in minus doloremque rerum aut. Culpa maxime officiis dolore ad at sed ut.\n\r Nemo fugiat a dolorem. Vel voluptatum quis beatae dolorem aut animi ut. Sit incidunt numquam ea inventore reiciendis. Sed et quia nostrum libero enim laudantium. Voluptatem voluptatem sed magni eum illum exercitationem.\n\r Alias saepe quaerat laborum sit. Ipsa quia molestiae quidem non quidem non at est. Esse neque harum voluptas voluptatibus ut commodi repellat. Doloribus et natus ut. Voluptatem enim sed aliquam et voluptatibus sint doloribus quo. Repellendus laboriosam libero et aut quam at exercitationem error. Qui nulla illo suscipit ut nulla nulla.\n\r\n\r\n\r";
+	//	uint8_t a = 0b1011011;
+	//	HAL_UART_Transmit(&huart1, &a , 2, 5000);
+	//	HAL_UART_Transmit(&huart1, m, strlen(m), HAL_MAX_DELAY);
+
+	//}
+}
 
 bool MX_sht3x_init() {
 	sht3x1.i2c_handle = &hi2c1;

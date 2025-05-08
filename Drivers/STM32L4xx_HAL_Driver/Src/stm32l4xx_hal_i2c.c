@@ -6910,8 +6910,7 @@ static HAL_StatusTypeDef I2C_WaitOnTXISFlagUntilTimeout(I2C_HandleTypeDef *hi2c,
   while (__HAL_I2C_GET_FLAG(hi2c, I2C_FLAG_TXIS) == RESET)
   {
     /* Check if an error is detected */
-	  HAL_StatusTypeDef a = I2C_IsErrorOccurred(hi2c, Timeout, Tickstart);
-    if (a != HAL_OK)
+    if (I2C_IsErrorOccurred(hi2c, Timeout, Tickstart) != HAL_OK)
     {
       return HAL_ERROR;
     }
