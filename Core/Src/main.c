@@ -53,6 +53,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
+uint8_t buffer[800] = {0};
 
 /* USER CODE END PV */
 
@@ -147,13 +148,16 @@ int main(void)
 
   while (!SGP30_CheckConnection()) {
 	  UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
-	  HAL_Delay(80);
+	  HAL_Delay(800);
   }
 
   // Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
   UART_Print("CO2 sensor gedetecteerd!\r\n");
   SGP30_Init();
   HAL_Delay(15000);
+  //HAL_UART_Receive_IT(&huart1, pData, Size)
+
+  HAL_UART_Receive_IT(&huart1, buffer, 300);
 
   /* USER CODE END 2 */
 
@@ -162,14 +166,15 @@ int main(void)
       // Print de CO2 waarden iedere seconde op de terminal
   while (1)
   {
-	  uint16_t co2 = SGP30_ReadCO2();
-	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
-	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-	  HAL_Delay(1000);
+
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  uint16_t co2 = SGP30_ReadCO2();
+	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }
@@ -298,10 +303,10 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Parity = UART_PARITY_EVEN;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -333,7 +338,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 19200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
