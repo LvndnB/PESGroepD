@@ -36,6 +36,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+extern uint8_t uart_rx_buffer[800];
 
 /* USER CODE END ET */
 
