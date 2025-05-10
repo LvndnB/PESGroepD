@@ -188,7 +188,7 @@ int main(void)
   huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
   huart1.Instance->CR1 |= USART_CR1_UE; // power on
 
-  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, 800);
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, 20000);
 
   /* USER CODE END 2 */
 

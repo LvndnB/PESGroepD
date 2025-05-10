@@ -223,7 +223,7 @@ void USART1_IRQHandler(void)
 
 	// handle character match interrupt
 	if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
-		uint32_t poss  =  800 - hdma_usart1_rx.Instance->CNDTR - 1;
+		uint32_t poss  =  20000 - hdma_usart1_rx.Instance->CNDTR - 1;
 		uart_pdu_ptr[uart_pdu_wrinting_point] = uart_rx_buffer[poss]; // str is always a ptr
 
 		if ( uart_rx_buffer[poss-1] == 'r') {
