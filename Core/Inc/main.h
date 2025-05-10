@@ -36,7 +36,11 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-extern uint8_t uart_rx_buffer[800];
+extern uint8_t uart_rx_buffer[20000];
+extern uint8_t **uart_pdu_ptr[128];
+extern uint8_t *uart_fast_pdu;
+extern int uart_pdu_wrinting_point;
+extern int uart_current_pdu;
 
 /* USER CODE END ET */
 

@@ -164,12 +164,13 @@ int main(void)
   // Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
   UART_Print("CO2 sensor gedetecteerd!\r\n");
   SGP30_Init();
-  HAL_Delay(15000);
 
-  // c binary oparation cheatcheet
-  // ~ (bitwise NOT)
-  // & (bitwise AND)
-  // | bitwise NOT
+  // c binary operations cheat sheet
+  // ~ bitwise NOT
+  // & bitwise AND
+  // ^ bitwise XOR
+  // | bitwise OR
+
 
   huart1.Instance->CR1 &= ~USART_CR1_RE; // shut down read
   huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
@@ -199,19 +200,23 @@ int main(void)
 
 
 	  if (uart_fast_pdu) { // if transmitter is on.
-		  uart_fast_pdu
-		  if (uart_fast_pdu-1 == 'r') {
+
+		  if (*(uart_fast_pdu-1) == 'r') {
 			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+			  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
+
 		  }
+		  uart_fast_pdu = false;
+
 	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	  uint16_t co2 = SGP30_ReadCO2();
-	  char uart_buffer[50];
-	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
-	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-	  HAL_Delay(1000);
+	  //char uart_buffer[50];
+	  //int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
+	  //HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
+	  //HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

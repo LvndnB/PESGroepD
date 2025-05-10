@@ -228,7 +228,7 @@ void USART1_IRQHandler(void)
 
 		if ( uart_rx_buffer[poss-1] == 'r') {
 			huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
-			uart_fast_pdu = uart_rx_buffer[poss];
+			uart_fast_pdu = &uart_rx_buffer[poss];
 			// TODO: force context switch
 		}
 
