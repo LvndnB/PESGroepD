@@ -56,12 +56,14 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-uint8_t uart_rx_buffer[800] = {0};
+uint8_t uart_rx_buffer[20000] = {0}; // this line is around 31% of memory
+                                     // I think some of the code must also be in memory
 
-uint8_t uart_pdu_ptr[16] = {0};
-uint8_t *uart_pdu_wrinting_point = uart_rx_ptr;
-uint8_t *uart_current_pdu = uart_rx_ptr;
+uint8_t **uart_pdu_ptr[128] = {0};
 uint8_t *uart_fast_pdu = 0;
+int uart_pdu_wrinting_point = 0;
+int uart_current_pdu = 0;
+
 
 /* USER CODE END PV */
 
@@ -196,9 +198,11 @@ int main(void)
   {
 
 
-	  if (huart1.Instance->CR1 &= USART_CR1_TE_Msk) { // if transmitter is on.
-
-		  // check request
+	  if (uart_fast_pdu) { // if transmitter is on.
+		  uart_fast_pdu
+		  if (uart_fast_pdu-1 == 'r') {
+			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+		  }
 	  }
     /* USER CODE END WHILE */
 
