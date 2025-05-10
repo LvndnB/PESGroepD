@@ -27,6 +27,9 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+typedef struct {
+	int a;
+} NetworkRequest;
 
 /* USER CODE END PTD */
 
@@ -53,7 +56,14 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-uint8_t buffer[800] = {0};
+uint8_t uart_rx_buffer[20000] = {0}; // this line is around 31% of memory
+                                     // I think some of the code must also be in memory
+
+uint8_t **uart_pdu_ptr[128] = {0};
+uint8_t *uart_fast_pdu = 0;
+int uart_pdu_wrinting_point = 0;
+int uart_current_pdu = 0;
+
 
 /* USER CODE END PV */
 
@@ -117,7 +127,6 @@ uint8_t SGP30_CheckConnection(void) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	  char uart_buffer[50];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -146,7 +155,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // Als sensor niet gevonden, stop
 
-  while (!SGP30_CheckConnection()) {
+  while (!SGP30_CheckConnection() && 0) {
+
 	  UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
 	  HAL_Delay(800);
   }
@@ -155,9 +165,29 @@ int main(void)
   UART_Print("CO2 sensor gedetecteerd!\r\n");
   SGP30_Init();
   HAL_Delay(15000);
-  //HAL_UART_Receive_IT(&huart1, pData, Size)
 
-  HAL_UART_Receive_IT(&huart1, buffer, 300);
+  // c binary oparation cheatcheet
+  // ~ (bitwise NOT)
+  // & (bitwise AND)
+  // | bitwise NOT
+
+  huart1.Instance->CR1 &= ~USART_CR1_RE; // shut down read
+  huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
+
+
+  uint8_t address = 0x22;
+  huart1.Instance->CR2 &= ~USART_CR2_ADD_Msk; // set addr to 0
+  huart1.Instance->CR2 |= address << USART_CR2_ADD_Pos; // set addr
+
+  huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (based on CR2_ADD)
+
+
+
+  huart1.Instance->CR1 |= USART_CR1_RE; // enable read
+  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
+  huart1.Instance->CR1 |= USART_CR1_UE; // power on
+
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, 800);
 
   /* USER CODE END 2 */
 
@@ -168,10 +198,17 @@ int main(void)
   {
 
 
+	  if (uart_fast_pdu) { // if transmitter is on.
+		  uart_fast_pdu
+		  if (uart_fast_pdu-1 == 'r') {
+			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+		  }
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	  uint16_t co2 = SGP30_ReadCO2();
+	  char uart_buffer[50];
 	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
 	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
 	  HAL_Delay(1000);
@@ -306,7 +343,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_EVEN;
+  huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;
@@ -404,7 +441,28 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/*void parse_pdu() {
+    char key[20];
+    char value[20];
 
+    if (sscanf((char *)rxDataBuff, "%19[^=]=%19[^\n]", key, value) == 2) {
+        int size = strlen(key) + strlen(value) + 2;  // Key=Value + newline
+        busRxReadPtr += size;
+        if (busRxReadPtr >= rxDataBuff + uart_buff_size) {
+            busRxReadPtr = rxDataBuff;
+        }
+
+        if (strcmp(key, "ENCODERRPM") == 0) {
+            rpm = atof(value) * 100;
+        }
+    }
+}*/
+
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	//parse_pdu();
+	//memset(rxDataBuff, 0, 50);
+}
 /* USER CODE END 4 */
 
 /**
