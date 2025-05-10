@@ -54,10 +54,13 @@ DMA_HandleTypeDef hdma_usart1_rx;
 sht3x_handle_t sht3x1;
 
 // basic moving buffer for processing
-uint8_t rxDataBuff[1000] = {0};
-uint8_t *busRxReadPtr = rxDataBuff;
-uint8_t *busRxWritePtr = rxDataBuff;
-int WowKanDit = 3;
+uint8_t uart_rx_buffer[20000] = {0}; // this line is around 31% of memory
+                                     // I think some of the code must also be in memory
+
+uint8_t **uart_pdu_ptr[128] = {0};
+uint8_t *uart_fast_pdu = 0;
+int uart_pdu_wrinting_point = 0;
+int uart_current_pdu = 0;
 
 
 int loopCounter = 0;
@@ -100,7 +103,9 @@ bool MX_sht3x_init();
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
+	}
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -134,6 +139,8 @@ int main(void)
 	  MX_sht3x_init();
   }
 
+  /* USER LABEL START UART CONFIG */
+
   // ps. not all registers should be disabled when uart isn't running.
   // i'm doing it so because it is a nice order. For details of what each registry
   // does please refer to the Reference Manual.
@@ -141,47 +148,37 @@ int main(void)
   huart1.Instance->CR1 &= ~USART_CR1_RE; // shut down read
   huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
 
-  // ability for uart to go to mute mode (Mute Mode Enable)
-  huart1.Instance->CR1 |= USART_CR1_MME;
-
+  // address can only be updated when the reciever is off. (RE or UE)
   uint8_t address = 0x20;
   huart1.Instance->CR2 &= ~USART_CR2_ADD_Msk; // set addr to 0
   huart1.Instance->CR2 |= address << USART_CR2_ADD_Pos; // set addr
 
-  huart1.Instance->CR1 |= USART_CR1_WAKE; // set wake method to that id is found.
-                                          // if set to 0 the uart wakes when line is down.
+  huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (CR2_ADD is ussed which char)
 
-  huart1.Instance->CR1 |= USART_CR1_RE; //enable read
+
+  huart1.Instance->CR1 |= USART_CR1_RE; // enable read
   huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
   huart1.Instance->CR1 |= USART_CR1_UE; // power on
 
-
-  huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (based on addr)
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, 800);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // loop counters
-  uint8_t procindex = 0;
   while (1)
   {
 
 	  // procflow
-	  if (huart1.Instance->CR1 & USART_CR1_TE) {
-		  for (int i = 0; i < 10; i++) {
-			  HAL_UART_Transmit(&huart1, &procindex, 1, 100);
+	  if (uart_fast_pdu) { // if transmitter is on.
+
+		  if (*(uart_fast_pdu-1) == 'r') {
+			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+			  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
+
 		  }
+		  uart_fast_pdu = false;
 
-
-		  HAL_Delay(70);
-		  procindex++;
-
-		  if (procindex > 7) {
-			  huart1.Instance->CR1 &= ~USART_CR1_TE; // power off transmitter
-			  procindex = 0;
-		  }
-		  continue;
 	  }
 
 	  // make sure that the char match interrupt is on when waiting.
@@ -204,7 +201,7 @@ int main(void)
 
 		 // the following is reporting the error details over usb for debugging case
 		 char errorMsg[20];
-		 sprintf(errorMsg, "%d",hi2c1.ErrorCode);
+		 sprintf(errorMsg, "%i",hi2c1.ErrorCode);
 		 HAL_UART_Transmit(&huart2, errorMsg, strlen(errorMsg), 5000);
 		 HAL_Delay(3);
 
@@ -245,7 +242,6 @@ int main(void)
 	 loopCounter++;
 	 char buffer[200] = {0};
 
-	 echoFound();
   }
   /* USER CODE END 3 */
 }
@@ -474,37 +470,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-
-
-void parse_pdu() {
-    char key[20];
-    char value[20];
-
-    if (sscanf((char *)rxDataBuff, "%19[^=]=%19[^\n]", key, value) == 2) {
-        int size = strlen(key) + strlen(value) + 2;  // Key=Value + newline
-        busRxReadPtr += size;
-        if (busRxReadPtr >= rxDataBuff + uart_buff_size) {
-            busRxReadPtr = rxDataBuff;
-        }
-
-        if (strcmp(key, "ENCODERRPM") == 0) {
-            rpm = atof(value) * 100;
-        }
-    }
-}
-
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	parse_pdu();
-	memset(rxDataBuff, 0, 50);
-}
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-	HAL_UART_Transmit(&huart1, rxDataBuff, Size, HAL_MAX_DELAY);
-	HAL_UARTEx_ReceiveToIdle_IT(&huart1, rxDataBuff, uart_buff_size);
-
-}
-
 
 bool MX_sht3x_init() {
 	sht3x1.i2c_handle = &hi2c1;

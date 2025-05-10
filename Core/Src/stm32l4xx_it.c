@@ -220,12 +220,23 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 
-	// handle Character match interrupt. This acts as a wake up signal
 	if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
-		huart1.Instance->ICR |= USART_ICR_CMCF; // reset flag
-		huart1.Instance->CR1 |= USART_CR1_TE; // turn on transmitter
+		uint32_t poss  =  800 - hdma_usart1_rx.Instance->CNDTR;
+		uart_pdu_ptr[uart_pdu_wrinting_point] = uart_rx_buffer[poss]; // str is always a ptr
+
+		if ( uart_rx_buffer[poss-1] == 'r') {
+			huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
+			uart_fast_pdu = &uart_rx_buffer[poss];
+			// TODO: force context switch
+		}
+
+		uart_pdu_wrinting_point++;
+		if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /*index starts at 0*/) {
+			uart_pdu_wrinting_point = 0;
+		}
+		huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
 		return;
-  }
+	}
 
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
