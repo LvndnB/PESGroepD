@@ -35,7 +35,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define uart_buff_size 800
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,6 +53,7 @@ DMA_HandleTypeDef hdma_usart1_rx;
 sht3x_handle_t sht3x1;
 
 // basic moving buffer for processing
+const uint8_t device_id = 0x20;
 uint8_t uart_rx_buffer[20000] = {0}; // this line is around 31% of memory
                                      // I think some of the code must also be in memory
 
@@ -94,6 +94,23 @@ bool MX_sht3x_init();
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+int bus_check_has_recieved_pos(char *buff, int length) {
+	const int len_offset_buff =  ((int) ( (void *) buff - (void *) uart_rx_buffer ) );
+
+	if (length + len_offset_buff  > uart_buff_size) {
+		return 2; // overflow... Wrap not jet implemented TODO
+	}
+
+	if (len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+			return 0; // an wrap has occurred
+	}
+
+	if (length + len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+		return 1;
+	}
+
+	// i do not know what other thing i need to check
+}
 /* USER CODE END 0 */
 
 /**
@@ -103,9 +120,7 @@ bool MX_sht3x_init();
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
-	}
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -149,9 +164,8 @@ int main(void)
   huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
 
   // address can only be updated when the reciever is off. (RE or UE)
-  uint8_t address = 0x20;
   huart1.Instance->CR2 &= ~USART_CR2_ADD_Msk; // set addr to 0
-  huart1.Instance->CR2 |= address << USART_CR2_ADD_Pos; // set addr
+  huart1.Instance->CR2 |= device_id << USART_CR2_ADD_Pos; // set addr
 
   huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (CR2_ADD is ussed which char)
 
@@ -169,16 +183,62 @@ int main(void)
   while (1)
   {
 
-	  // procflow
+	  /* procflow START */
+
+	  // fast pdu
 	  if (uart_fast_pdu) { // if transmitter is on.
 
 		  if (*(uart_fast_pdu-1) == 'r') {
-			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
 			  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
 
 		  }
 		  uart_fast_pdu = false;
 
+	  }
+
+	  // handle the rest.
+
+	  // example pdu
+	  //
+	  // +---------+-----------+--------+-----+-----+
+	  // | method  | Device ID | DATA   : ... | null|
+	  // +---------+-----------+--------+-----+-----+
+
+	  while (uart_current_pdu  != uart_pdu_wrinting_point) {
+
+		  uint8_t *Device_id = uart_pdu_ptr[uart_current_pdu];
+		  switch (Device_id[-1]) {
+
+		  	  case 's': // Rpi has (S)end data to stm
+		  		  HAL_Delay(5);
+		  		  char _[99]  = "";
+		  		  int lcount = 0;
+		  		  int val = 0;
+		  		  HAL_UART_Transmit(&huart2, Device_id+1, strlen(Device_id+1), 5000);
+		  		  if (strlen(Device_id)!= 0) {
+		  			  HAL_UART_Transmit(&huart2, " (Display)", 10, 5000);
+		  			  sscanf(Device_id+2, "%20[^:]:%d:%d", _, &lcount, &val);
+		  			  tm1637DisplayDecimal(val, 1);
+		  		  }
+		  	  	  HAL_UART_Transmit(&huart2, "\r\n", 2, 5000);
+		  		  break;
+		  	  case 'r': // rpi (R)equest data from stm
+		  		  //HAL_UART_Transmit(&huart2, Device_id+1, strlen(Device_id+1), 5000);
+		  		  break;
+
+		  	  case 'h': // request already (H)andled
+				  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+		  		  break;
+
+		  	  default: // idk pdu mallformed?
+		  		  break;
+		  }
+
+
+		  uart_current_pdu++;
+		  if (uart_current_pdu == 126) {
+			  uart_current_pdu = 0;
+		  }
 	  }
 
 	  // make sure that the char match interrupt is on when waiting.
@@ -194,7 +254,7 @@ int main(void)
 	 bool success = sht3x_read_temperature_and_humidity(&sht3x1, &temperature, &humidity);
 
 	 int displayContent;
-	 if (success) {
+	 if (success || true) {
 		 displayContent = temperature;
 	 } else {
 		 displayContent = 1000+hi2c1.ErrorCode;
@@ -203,7 +263,6 @@ int main(void)
 		 char errorMsg[20];
 		 sprintf(errorMsg, "%i",hi2c1.ErrorCode);
 		 HAL_UART_Transmit(&huart2, errorMsg, strlen(errorMsg), 5000);
-		 HAL_Delay(3);
 
 		 if (hi2c1.ErrorCode & (HAL_I2C_ERROR_BERR )) {
 			HAL_UART_Transmit(&huart2, " BERR ", 6, 5000 );
@@ -236,11 +295,9 @@ int main(void)
 	 } // end of if success
 
 	 // Set data to display
-	 tm1637DisplayDecimal(displayContent, 1);
+	 // tm1637DisplayDecimal(displayContent, 1);
 
-	 HAL_Delay(10);
 	 loopCounter++;
-	 char buffer[200] = {0};
 
   }
   /* USER CODE END 3 */
@@ -373,7 +430,7 @@ static void MX_USART1_UART_Init(void)
   huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_EVEN;
+  huart1.Init.Parity = UART_PARITY_NONE;
   huart1.Init.Mode = UART_MODE_TX_RX;
   huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
   huart1.Init.OverSampling = UART_OVERSAMPLING_16;

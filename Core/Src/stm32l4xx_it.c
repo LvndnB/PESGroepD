@@ -220,20 +220,43 @@ void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
 
+	// this handles the character match interrupt which is used addressing and start of msg
 	if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
-		uint32_t poss  =  800 - hdma_usart1_rx.Instance->CNDTR;
-		uart_pdu_ptr[uart_pdu_wrinting_point] = uart_rx_buffer[poss]; // str is always a ptr
 
-		if ( uart_rx_buffer[poss-1] == 'r') {
+		uint32_t dma_writingpoint  =  uart_buff_size - hdma_usart1_rx.Instance->CNDTR;
+
+		// Find the address location because there is a slight timing difference when DMA catches a new char and when this is run. So
+		//
+		uint8_t *id_location = 0;   // If code is faster then DMA we need to look at the comming byte that is the reason it also contains a negative.
+		for (int i = -1; i < 3; i++) {
+			if (uart_rx_buffer[dma_writingpoint - i] == device_id) {
+				id_location = &uart_rx_buffer[dma_writingpoint - i];
+				break;
+			}
+		}
+		uart_pdu_ptr[uart_pdu_wrinting_point] = id_location;
+
+		if (id_location == 0) {
+			huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
+			return; // HOTFIX crash because it can not be fount when debugging.
+		}
+		// pdu example
+		// +---------+-----------+--------+-----+-----+
+		// | method  | Device ID | DATA   : ... | null|
+		// +---------+-----------+--------+-----+-----+
+
+		// This makes sure that no noice will be picked up when transmiss
+		if ( *(id_location - 1) == 'r') {
 			huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
-			uart_fast_pdu = &uart_rx_buffer[poss];
-			// TODO: force context switch
+			uart_fast_pdu = id_location;
+			// TODO: force context switch so it does not wait 50ms per device. Or 150 ms total because it is 3 devices.
 		}
 
 		uart_pdu_wrinting_point++;
-		if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /*index starts at 0*/) {
+		if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /* corrects the index because its starts at 0*/) {
 			uart_pdu_wrinting_point = 0;
 		}
+
 		huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
 		return;
 	}
