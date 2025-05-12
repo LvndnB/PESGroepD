@@ -83,25 +83,22 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN 0 */
 
 /**
- * Basicly strcmp but its waits for data if it is not recieved.
  * Use this when it is likely that buff is not filled
  */
 int bus_check_has_recieved(char *buff, int length) {
-	const int len = strlen(key);
-	const int len_offset_buff = buff - uart_rx_buffer;
+	const int len_offset_buff =  ((int) ( (void *) buff - (void *) uart_rx_buffer ) );
 
-	if (len + len_offset_buff  > uart_buff_size) {
+	if (length + len_offset_buff  > uart_buff_size) {
 		return 2; // overflow... Wrap not jet implemented TODO
-	}
-
-	if (len + len_offset_buff < uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
-		return 0; // it fits
 	}
 
 	if (len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
 			return 0; // an wrap has occurred
 	}
 
+	if (length + len_offset_buff < uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+		return 0; // it fits
+	}
 
 }
 
@@ -218,7 +215,8 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-      // Print de CO2 waarden iedere seconde op de terminal
+  long int loopcounter = 0;
+  int co2 = 0;
   while (1)
   {
 
@@ -226,7 +224,9 @@ int main(void)
 	  if (uart_fast_pdu) { // if transmitter is on.
 
 		  if (*(uart_fast_pdu-1) == 'r') {
-			  HAL_UART_Transmit(&huart1, "Die", 3, 500);
+			  char msg[200] = {0};
+			  snprintf(msg, sizeof(msg), "co2:%d:%d", loopcounter, co2);
+			  HAL_UART_Transmit(&huart1, msg, strlen(msg), 1000);
 			  huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
 
 		  }
@@ -236,11 +236,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  uint16_t co2 = SGP30_ReadCO2();
+	  co2 = SGP30_ReadCO2();
 	  char uart_buffer[50];
-	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
+	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "%-2d CO2: %d ppm\r\n", loopcounter, co2);
 	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-	  HAL_Delay(1000);
+	  HAL_Delay(40);
+	  loopcounter++;
   }
   /* USER CODE END 3 */
 }

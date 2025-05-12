@@ -218,44 +218,55 @@ void DMA1_Channel5_IRQHandler(void)
   */
 void USART1_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART1_IRQn 0 */
+	/* USER CODE BEGIN USART1_IRQn 0 */
+
 	// this handles the character match interrupt which is used addressing and start of msg
-		if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
+	if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
 
-			uint32_t buffer_offset  =  uart_buff_size - hdma_usart1_rx.Instance->CNDTR;
+		uint32_t dma_writingpoint  =  uart_buff_size - hdma_usart1_rx.Instance->CNDTR;
 
-			// Find the address location because there is a slight timing difference when DMA catches a new char and when this is run. So
-			//
-			uint8_t *address = &uart_rx_buffer[buffer_offset + 1];   // If code is faster then it is negative. And can't be found
-			for (int i = -1; i < 3; i++) {
-				if (uart_rx_buffer[buffer_offset - i] == device_id) {
-					address = &uart_rx_buffer[buffer_offset - i];
-					break;
-				}
+		// Find the address location because there is a slight timing difference when DMA catches a new char and when this is run. So
+		//
+		uint8_t *id_location = 0;   // If code is faster then DMA we need to look at the comming byte that is the reason it also contains a negative.
+		for (int i = -1; i < 3; i++) {
+			if (uart_rx_buffer[dma_writingpoint - i] == device_id) {
+				id_location = &uart_rx_buffer[dma_writingpoint - i];
+				break;
 			}
-			uart_pdu_ptr[uart_pdu_wrinting_point] = address;
-
-
-			// This makes sure that no noice will be picked up when transmiss
-			if ( *(address - 1) == 'r') {
-				huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
-				uart_fast_pdu = address;
-				// TODO: force context switch so it does not wait 50ms per device. Or 150 ms total because it is 3 devices.
-			}
-
-			uart_pdu_wrinting_point++;
-			if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /* corrects the index because its starts at 0*/) {
-				uart_pdu_wrinting_point = 0;
-			}
-
-			huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
-			return;
 		}
-  /* USER CODE END USART1_IRQn 0 */
-  HAL_UART_IRQHandler(&huart1);
-  /* USER CODE BEGIN USART1_IRQn 1 */
+		uart_pdu_ptr[uart_pdu_wrinting_point] = id_location;
 
-  /* USER CODE END USART1_IRQn 1 */
+		if (id_location == 0) {
+			return; // HOTFIX crash because it can not be fount when debugging.
+		}
+
+		// pdu example
+		// +---------+-----------+--------+-----+-----+
+		// | method  | Device ID | DATA   : ... | null|
+		// +---------+-----------+--------+-----+-----+
+
+		// This makes sure that no noice will be picked up when transmiss
+		if ( *(id_location - 1) == 'r') {
+			huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
+			uart_fast_pdu = id_location;
+			// TODO: force context switch so it does not wait 50ms per device. Or 150 ms total because it is 3 devices.
+		}
+
+		uart_pdu_wrinting_point++;
+		if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /* corrects the index because its starts at 0*/) {
+			uart_pdu_wrinting_point = 0;
+		}
+
+		huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
+		return;
+	}
+
+
+	/* USER CODE END USART1_IRQn 0 */
+	HAL_UART_IRQHandler(&huart1);
+	/* USER CODE BEGIN USART1_IRQn 1 */
+
+	/* USER CODE END USART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
