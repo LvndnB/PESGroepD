@@ -36,6 +36,9 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+#define uart_buff_size 20000
+
+extern const uint8_t device_id;
 extern uint8_t uart_rx_buffer[20000];
 extern uint8_t **uart_pdu_ptr[128];
 extern uint8_t *uart_fast_pdu;

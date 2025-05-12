@@ -27,14 +27,14 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct {
-	int a;
-} NetworkRequest;
+
 
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+
 
 /// SGP30 commands
 #define SGP30_ADDRESS  (0x58 << 1)
@@ -56,7 +56,8 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 /* USER CODE BEGIN PV */
-uint8_t uart_rx_buffer[20000] = {0}; // this line is around 31% of memory
+const uint8_t device_id = 0x22;
+uint8_t uart_rx_buffer[uart_buff_size] = {0}; // this line is around 31% of memory
                                      // I think some of the code must also be in memory
 
 uint8_t **uart_pdu_ptr[128] = {0};
@@ -80,6 +81,30 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/**
+ * Basicly strcmp but its waits for data if it is not recieved.
+ * Use this when it is likely that buff is not filled
+ */
+int bus_check_has_recieved(char *buff, int length) {
+	const int len = strlen(key);
+	const int len_offset_buff = buff - uart_rx_buffer;
+
+	if (len + len_offset_buff  > uart_buff_size) {
+		return 2; // overflow... Wrap not jet implemented TODO
+	}
+
+	if (len + len_offset_buff < uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+		return 0; // it fits
+	}
+
+	if (len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+			return 0; // an wrap has occurred
+	}
+
+
+}
+
 // Init voor de SGP30 Sensor
 void SGP30_Init(void) {
     uint8_t command[] = CMD_INIT_AIR_QUALITY;
@@ -176,9 +201,8 @@ int main(void)
   huart1.Instance->CR1 &= ~USART_CR1_UE; // shut everything down
 
 
-  uint8_t address = 0x22;
   huart1.Instance->CR2 &= ~USART_CR2_ADD_Msk; // set addr to 0
-  huart1.Instance->CR2 |= address << USART_CR2_ADD_Pos; // set addr
+  huart1.Instance->CR2 |= device_id << USART_CR2_ADD_Pos; // set addr
 
   huart1.Instance->CR1 |= USART_CR1_CMIE;   // enable Character match interrupt (based on CR2_ADD)
 
@@ -188,7 +212,7 @@ int main(void)
   huart1.Instance->CR1 &= ~USART_CR1_TE_Msk; // disable sending
   huart1.Instance->CR1 |= USART_CR1_UE; // power on
 
-  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, 20000);
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, uart_buff_size);
 
   /* USER CODE END 2 */
 
@@ -213,10 +237,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  uint16_t co2 = SGP30_ReadCO2();
-	  //char uart_buffer[50];
-	  //int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
-	  //HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-	  //HAL_Delay(1000);
+	  char uart_buffer[50];
+	  int len = snprintf(uart_buffer, sizeof(uart_buffer), "CO2: %d ppm\r\n", co2);
+	  HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
+	  HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

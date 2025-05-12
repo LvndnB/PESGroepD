@@ -219,26 +219,38 @@ void DMA1_Channel5_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-	// this is highly optimized because this is the limit of how fast the uart can run.
+	// this handles the character match interrupt which is used addressing and start of msg
+		if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
 
-	// handle character match interrupt
-	if (huart1.Instance->ISR & USART_ISR_CMF_Msk) {
-		uint32_t poss  =  20000 - hdma_usart1_rx.Instance->CNDTR - 1;
-		uart_pdu_ptr[uart_pdu_wrinting_point] = uart_rx_buffer[poss]; // str is always a ptr
+			uint32_t buffer_offset  =  uart_buff_size - hdma_usart1_rx.Instance->CNDTR;
 
-		if ( uart_rx_buffer[poss-1] == 'r') {
-			huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
-			uart_fast_pdu = &uart_rx_buffer[poss];
-			// TODO: force context switch
+			// Find the address location because there is a slight timing difference when DMA catches a new char and when this is run. So
+			//
+			uint8_t *address = &uart_rx_buffer[buffer_offset + 1];   // If code is faster then it is negative. And can't be found
+			for (int i = -1; i < 3; i++) {
+				if (uart_rx_buffer[buffer_offset - i] == device_id) {
+					address = &uart_rx_buffer[buffer_offset - i];
+					break;
+				}
+			}
+			uart_pdu_ptr[uart_pdu_wrinting_point] = address;
+
+
+			// This makes sure that no noice will be picked up when transmiss
+			if ( *(address - 1) == 'r') {
+				huart1.Instance->CR1 |= USART_CR1_TE; // attach transmitter
+				uart_fast_pdu = address;
+				// TODO: force context switch so it does not wait 50ms per device. Or 150 ms total because it is 3 devices.
+			}
+
+			uart_pdu_wrinting_point++;
+			if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /* corrects the index because its starts at 0*/) {
+				uart_pdu_wrinting_point = 0;
+			}
+
+			huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
+			return;
 		}
-
-		uart_pdu_wrinting_point++;
-		if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /*index starts at 0*/) {
-			uart_pdu_wrinting_point = 0;
-		}
-		huart1.Instance->ICR |= USART_ICR_CMCF; // reset character match interrupt flag
-		return;
-  }
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
