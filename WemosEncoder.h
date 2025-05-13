@@ -3,13 +3,13 @@
 
 
 #include "Wemos.h"
-#include "WemosDualLED.h"
+#include "WemosDLEDenBuzzer.h"
 
 class WemosEncoder : public Wemos {
 private:
-    WemosDualLED* dualled;
+WemosDLEDenBuzzer* dualled;
 public:
-    WemosEncoder(const std::string& ip, int port, WemosDualLED* led);
+    WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led);
     void sendRPM(const std::string& rpm);
     void sendStatus(const std::string& status);
 };
