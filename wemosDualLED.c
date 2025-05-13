@@ -18,11 +18,12 @@ void setup() {
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
   server.begin();
+  Serial.println(WiFi.localIP());
 }
 
 // Functie voor besturen LED
 void bestuurLED(int pin, int status) {
-  digitalWrite(pin, !status);
+  digitalWrite(pin, status);
 }
 
 void loop() {
@@ -32,13 +33,24 @@ void loop() {
     String input = client.readStringUntil('\n');
     input.trim();
     if (sscanf(input.c_str(), "%49[^ = ] = %d", key, &value) == 2) {  // String parsing voor key = value
-      if (value == 1 || value == 0) {                                 // Aansturing van besturenLED functie
+      Serial.println(value);
+      if (value == 1) {                                 // Aansturing van besturenLED functie
+        if (strcmp(key, "DUALLEDROOD") == 0) {
+          bestuurLED(roodledPin, value);
+          bestuurLED(groenledPin, !value);
+        }
+        if (strcmp(key, "DUALLEDGROEN") == 0) {
+          bestuurLED(groenledPin, value);
+          bestuurLED(roodledPin, !value);
+        }
+      } else if (value == 0) {
         if (strcmp(key, "DUALLEDROOD") == 0) {
           bestuurLED(roodledPin, value);
         }
         if (strcmp(key, "DUALLEDGROEN") == 0) {
           bestuurLED(groenledPin, value);
         }
+
       }
     }
   }
