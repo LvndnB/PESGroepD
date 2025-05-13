@@ -34,6 +34,7 @@ void setup() {
 
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
+  Serial.println(WiFi.localIP());
 }
 
 void loop() {
