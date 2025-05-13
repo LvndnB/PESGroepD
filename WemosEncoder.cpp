@@ -1,8 +1,8 @@
 #include "WemosEncoder.h"
 #include <cstdlib>
-#include "WemosDualLED.h"
+#include "WemosDLEDenBuzzer.h"
 
-WemosEncoder::WemosEncoder(const std::string& ip, int port, WemosDualLED* led) : Wemos(ip, port), dualled(led) {}
+WemosEncoder::WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led) : Wemos(ip, port), dualled(led) {}
 
 
 void WemosEncoder::sendRPM(const std::string& rpm) {
