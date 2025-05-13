@@ -47,6 +47,10 @@ void SocketServer::start() {
                 encoder->sendRPM(sValue);
             } else if (sKey == "ENCODER_STATUS") {
                 encoder->sendStatus(sValue);
+            } else if (sKey == "HARTSLAG") {
+                // Implementatie van HARTSLAG bijv naar Buzzer en dualLed (dus check grenswaarde in WemosPulseOxy)
+            } else if (sKey == "ZUURSTOF") {
+                // Implementatie van ZUURSTOF bijv naar datalogging
             }
         }
 
