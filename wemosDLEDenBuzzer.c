@@ -44,8 +44,11 @@ void aansturingRood(int status) {
 
 void aansturingBuzzer(int status) {
   if (status == 1) {
-    tone(buzzerPin, 500);  // Start toon op 1000 Hz
-  } else {
+    tone(buzzerPin, 500);  // Start toon op 500 Hz
+    Serial.println("tone");
+  } 
+  if (status == 0){
+    Serial.println("notone");
     noTone(buzzerPin);  // Stop de toon
   }
 }
