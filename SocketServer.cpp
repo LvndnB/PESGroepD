@@ -7,7 +7,7 @@
 
 #define BUFFER_SIZE 1024
 
-SocketServer::SocketServer(int port, WemosEncoder* encoder) : port(port), encoder(encoder) {}
+SocketServer::SocketServer(int port, WemosEncoder* encoder, WemosPulseOxy* pulseoxy) : port(port), encoder(encoder), pulseoxy(pulseoxy) {}
 
 void SocketServer::start() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -47,8 +47,9 @@ void SocketServer::start() {
                 encoder->sendRPM(sValue);
             } else if (sKey == "ENCODER_STATUS") {
                 encoder->sendStatus(sValue);
-            } else if (sKey == "HARTSLAG") {
+            } else if (sKey == "HARTSLAGAVG") {
                 // Implementatie van HARTSLAG bijv naar Buzzer en dualLed (dus check grenswaarde in WemosPulseOxy)
+                pulseoxy->checkPulse(sValue);
             } else if (sKey == "ZUURSTOF") {
                 // Implementatie van ZUURSTOF bijv naar datalogging
             }
