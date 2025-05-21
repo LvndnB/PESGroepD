@@ -138,7 +138,7 @@ int uart_class::receive_null_termenated(char *buff, int size)
         return -2;
     }
 
-    const int read_size = 8;
+    const int read_size = 100;
     int buff_index = 0;
     int max_times_outside_of_buff = 10;
     

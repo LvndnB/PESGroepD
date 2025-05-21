@@ -62,7 +62,7 @@ int loop() {
     //}
     std::cout << std::endl << "----" << std::endl;
     usleep(5000);
-    sendDataToDevice(sensors, data, strlen(data));
+    sendDataToDevice(klok, data, strlen(data));
     free(data);
     usleep(30000);
     //char *data2 = requestDataFromDevice(klok, "Zonnepaneel", 4);
