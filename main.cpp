@@ -1,17 +1,21 @@
 #include <sys/socket.h>
+#include <iostream>
 #include <string.h>
 #include <string>
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include "uart_class.h"
-int main() {
+//#include "Procflow/interface.cpp"
+#include "Procflow/uart_class.h"
+#include "Procflow/main_loop.h"
+
+int oldmain() {
   char val[50];
   char key[50];
   int count = 0;
   char recve[50] = "...";
-  char buf[50];
+  char buf[50] = {0};
   int rec = 0;
   int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -39,8 +43,8 @@ int main() {
   }
   printf("De socket is verbonden...\n");
 do {
-  int back = 256;
-  int listn = listen(sockfd, back);
+  int Max_clients_waiting = 256; // wtf is this mess
+  int listn = listen(sockfd, Max_clients_waiting);
   if (listn < 0) {
 
     perror("Kan niet luisteren op deze port!");
@@ -86,4 +90,11 @@ do {
 //    ++count;
   } while (1);
   return 0;
+}
+
+
+int main(int argc, char **argv) {
+  while (true) {
+    loop();
+  }
 }

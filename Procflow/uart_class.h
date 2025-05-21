@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <termios.h> // provides baudrate divides
 class uart_class {
@@ -30,6 +31,7 @@ class uart_class {
         ~uart_class();
         int send(void *buff, int size);
         int receive(void *buff, int buffsize );
+        int receive_null_termenated(char *buff, int buffsize);
         int get_fd();
 
 };

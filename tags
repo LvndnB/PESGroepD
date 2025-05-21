@@ -1,0 +1,51 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+b110	Procflow/uart_class.h	/^                b110 = B110,$/;"	e	enum:uart_class::baudrate
+b1200	Procflow/uart_class.h	/^                b1200 = B1200,$/;"	e	enum:uart_class::baudrate
+b134	Procflow/uart_class.h	/^                b134 = B134,$/;"	e	enum:uart_class::baudrate
+b150	Procflow/uart_class.h	/^                b150 = B150,$/;"	e	enum:uart_class::baudrate
+b1800	Procflow/uart_class.h	/^                b1800 = B1800,$/;"	e	enum:uart_class::baudrate
+b19200	Procflow/uart_class.h	/^                b19200 = B19200, \/\/ uart default$/;"	e	enum:uart_class::baudrate
+b200	Procflow/uart_class.h	/^                b200 = B200,$/;"	e	enum:uart_class::baudrate
+b2400	Procflow/uart_class.h	/^                b2400 = B2400,$/;"	e	enum:uart_class::baudrate
+b300	Procflow/uart_class.h	/^                b300 = B300,$/;"	e	enum:uart_class::baudrate
+b38400	Procflow/uart_class.h	/^                b38400 = B38400,$/;"	e	enum:uart_class::baudrate
+b4800	Procflow/uart_class.h	/^                b4800 = B4800,$/;"	e	enum:uart_class::baudrate
+b50	Procflow/uart_class.h	/^                b50	 = B50,$/;"	e	enum:uart_class::baudrate
+b600	Procflow/uart_class.h	/^                b600 = B600,$/;"	e	enum:uart_class::baudrate
+b75	Procflow/uart_class.h	/^                b75 = B75,$/;"	e	enum:uart_class::baudrate
+b9600	Procflow/uart_class.h	/^                b9600 = B9600,$/;"	e	enum:uart_class::baudrate
+baudrate	Procflow/uart_class.h	/^        enum baudrate {$/;"	g	class:uart_class
+bus	Procflow/main_loop.cpp	/^uart_class bus = uart_class("\/dev\/ttyS0");$/;"	v
+chipSelect	Procflow/main_loop.cpp	/^int chipSelect = 0;$/;"	v
+deamon_socket	Procflow/interface.cpp	/^    int deamon_socket = 0;$/;"	m	class:procflow	file:
+deur	Procflow/main_loop.cpp	/^    deur = 1,$/;"	e	enum:__anon1	file:
+device_t	Procflow/main_loop.cpp	/^} device_t;$/;"	t	typeref:enum:__anon1	file:
+fd	Procflow/uart_class.h	/^        int fd = -1;$/;"	m	class:uart_class
+file_not_open	Procflow/uart_class.cpp	/^    file_not_open,$/;"	e	enum:recvErr	file:
+get_fd	Procflow/uart_class.cpp	/^int uart_class::get_fd() {$/;"	f	class:uart_class
+get_value	Procflow/interface.cpp	/^    void get_value(int id) {$/;"	f	class:procflow
+init_eh	Procflow/main_loop.cpp	/^int init_eh(int sock_in) {$/;"	f
+init_procflow	Procflow/interface.cpp	/^int init_procflow() {$/;"	f
+klok	Procflow/main_loop.cpp	/^    klok = 2,$/;"	e	enum:__anon1	file:
+loop	Procflow/main_loop.cpp	/^int loop() {$/;"	f
+main	main.cpp	/^int main(int argc, char **argv) {$/;"	f
+nothing_recv	Procflow/uart_class.cpp	/^    nothing_recv,$/;"	e	enum:recvErr	file:
+oldmain	main.cpp	/^int oldmain() {$/;"	f
+other	Procflow/main_loop.cpp	/^    other = 0,$/;"	e	enum:__anon1	file:
+procflow	Procflow/interface.cpp	/^    procflow()$/;"	f	class:procflow
+procflow	Procflow/interface.cpp	/^class procflow$/;"	c	file:
+raam	Procflow/main_loop.cpp	/^    raam = 3,$/;"	e	enum:__anon1	file:
+receive	Procflow/uart_class.cpp	/^int uart_class::receive(void *buff, int size) {$/;"	f	class:uart_class
+recvErr	Procflow/uart_class.cpp	/^enum recvErr {$/;"	g	file:
+send	Procflow/interface.cpp	/^    void send(int key, char *val) {$/;"	f	class:procflow
+send	Procflow/uart_class.cpp	/^int uart_class::send(void *buff, int size) {$/;"	f	class:uart_class
+sock	Procflow/main_loop.cpp	/^int sock = 0;$/;"	v
+uart_class	Procflow/uart_class.cpp	/^uart_class::uart_class(std::string uart_path) {$/;"	f	class:uart_class
+uart_class	Procflow/uart_class.h	/^class uart_class {$/;"	c
+wakeChip	Procflow/main_loop.cpp	/^bool wakeChip(device_t device) {$/;"	f
+~uart_class	Procflow/uart_class.cpp	/^uart_class::~uart_class() {$/;"	f	class:uart_class

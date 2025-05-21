@@ -1,2 +1,2 @@
-debug.out: *.cpp
-	g++ main.cpp ./uart_class.cpp -Wall -Og -ggdb -o debug.out
+debug.out_bin: 
+	g++ main.cpp Procflow/*.cpp -Wall -O0 -ggdb -o debug.out

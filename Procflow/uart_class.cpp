@@ -44,15 +44,16 @@ uart_class::uart_class(std::string uart_path) {
 
 
         int baudspead = B19200;
-        //                baud    | wordlen
-        options.c_cflag = baudspead | CS8 | PARENB;
+        options.c_cflag = baudspead | CS8;
+        // CS8 = word lenght of 8
         // if PARENB is pressent paraty is on otherwise off.
         // if PARODD is present parity is odd otherwise it is even.
 
-        options.c_cflag |= (CLOCAL | CREAD); // enable reader and remove modem controls 
+        options.c_cflag |= (CLOCAL | CREAD);  // enable reader and remove modem controls 
+        
         //options.c_cflag &= ~CRTSCTS; //Disable hardware flow control
 
-        cfsetispeed(&options, baudspead); // baud again
+        cfsetispeed(&options, baudspead); 
         cfsetospeed(&options, baudspead);
         
         options.c_iflag = IGNPAR; // if parity error remove char.
@@ -60,7 +61,7 @@ uart_class::uart_class(std::string uart_path) {
         options.c_lflag = 0;
 
         options.c_cc[VMIN] = 0; // minimal bytes that is needed for the read to finished.
-        options.c_cc[VTIME] = 5; // set read timeout to x/10 sec
+        options.c_cc[VTIME] = 9; // set read timeout to x/10 seconds (Decisecond)
         tcflush(fd, TCIFLUSH);
         tcsetattr(fd, TCSANOW, &options);
 }
@@ -69,17 +70,21 @@ uart_class::~uart_class() {
     close(fd);
 }
 
-int uart_class::send(void *buff, int size) {
-    if (size == 0) {
-        printf("no test.");
-        return 0; 
+int uart_class::send(void *buff, int size)
+{
+
+    if (size == 0)
+    {
+
+        return 0;
     }
 
-    int count = write(fd, buff, size);              //Filestream, bytes to write, number of bytes to write
+    int count = write(fd, buff, size);
 
     // TODO: check if send count is the same as param size.
 
-    if (count < 0) {
+    if (count < 0)
+    {
         // TODO: fetch errno and handle err.
         printf("UART TX error\n");
         return -1;
@@ -88,38 +93,113 @@ int uart_class::send(void *buff, int size) {
     return count;
 }
 
-
-enum recErr {
+enum recvErr {
     file_not_open,
     nothing_recv,
-
 };
 
-int uart_class::receive(void *buff, int size) {
-    if (fd == -1) {
+int uart_class::receive(void *buff, int size)
+{
+    if (fd == -1)
+    {
         return -2;
     }
 
-    int rx_length = read(fd, buff, size);		//Filestream, buffer to store in, number of bytes to read (max)
+    int buff_index = 0;
 
-    if (rx_length < 0) { // is error
+    while (true)
+    {
+        int rx_length = read(fd, buff+buff_index, 1);
 
-        if (errno == EAGAIN) { // whould block or no data recv
-            return 0; 
+        if (rx_length < 0) // is error
+        { 
+            if (errno == EAGAIN) // whould block or no data recv
+            {
+                continue;
+            }
+
+            // TODO: check errno and return different when common error
+
+            printf("Error %d recv\r\n", errno);
+            return -rx_length;
         }
 
-        // TODO: check errno and return different when common error 
-
-        printf("Error %d recv\r\n", errno);
-        return -1;
+        if (buff_index > size) {
+            return rx_length;
+        }
+        buff_index++;
     }
-    else if (rx_length == 0)
+}
+
+int uart_class::receive_null_termenated(char *buff, int size)
+{
+    if (fd == -1)
     {
-        return 0; // no data in buff.
+        return -2;
     }
 
-    return rx_length;
+    const int read_size = 8;
+    int buff_index = 0;
+    int max_times_outside_of_buff = 10;
+    
+    enum {
+        finding_start,
+        finding_end,
+    } state = finding_start;
 
+     while (true)
+    {
+        int rx_length = read(fd, buff+buff_index, read_size);
+
+        if (rx_length < 0) // is error
+        { 
+            if (errno == EAGAIN) // whould block or no data recv
+            {
+                continue;
+            }
+
+            // TODO: check errno and return different when common error
+
+            printf("Error %d recv\r\n", errno);
+
+            return -rx_length - 1; // a minus sign before a var inverts the value. example a = 21; -a = -21; 
+        }
+
+
+        for (int i = 0; i < read_size; i++) {
+            
+            if (state == finding_end &&
+                buff[buff_index+i] == 0) {
+
+                return buff_index;
+            }
+
+            if (state == finding_start &&
+                buff[buff_index+i] == 2) {
+                buff_index -= read_size; // to counteract the first ++
+                state = finding_end;
+            } 
+        }
+        if (state == finding_start)
+        {
+            max_times_outside_of_buff--;
+
+            if (max_times_outside_of_buff == 0)
+            {
+                return -2; // timeout error
+            }
+        }
+
+        if (state == finding_end) { // overwrite start of buffer if msg is not starded
+            buff_index += read_size;
+        }
+
+        if (buff_index > size - read_size) { // prevent buffer offerflow
+            buff[buff_index] = 0;
+            return 0; 
+
+        }
+    }
 }
 
 int uart_class::get_fd() {
