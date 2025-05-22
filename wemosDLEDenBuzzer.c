@@ -25,21 +25,11 @@ void setup() {
 
 
 void aansturingGroen(int status) {
-  if (status == 1) {
-    digitalWrite(groenledPin, 1);
-    digitalWrite(roodledPin, 0);
-  } else {
-    digitalWrite(groenledPin, 0);
-  }
+  digitalWRITE(groenledPin, status);
 }
 
 void aansturingRood(int status) {
-  if (status == 1) {
-    digitalWrite(roodledPin, 1);
-    digitalWrite(groenledPin, 0);
-  } else {
-    digitalWrite(roodledPin, 0);
-  }
+  digitalWRITE(roodledPin, status);
 }
 
 void aansturingBuzzer(int status) {
