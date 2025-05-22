@@ -106,6 +106,8 @@ void loop() {
     }
   }
 
+
+  // stuur rpm=0 als de encoder niet meer draait
   if (isMoving && !rpmreset && (millis() - laatsteBeweging > 1000)) {
     if (client.connect(serverIP, serverPort)) {
       char buffer[50];
@@ -115,23 +117,6 @@ void loop() {
     }
     rpmreset = 1;
   }
-
-  // Controleer of de encoder 5 seconden niet heeft bewogen
-  if (isMoving && (millis() - laatsteBeweging > 5000)) {
-    isMoving = 0;
-    if (client.connect(serverIP, serverPort)) {
-      char buffer[50];
-      sprintf(buffer, "ENCODER_STATUS=0\n");
-      client.print(buffer);
-      client.stop();
-      Serial.println("Status=0");
-    }
-    
-  }
-
-  
-
-  
 
   lastCLK = currentCLK;  // Update de vorige CLK waarde
 }
