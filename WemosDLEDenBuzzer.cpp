@@ -5,9 +5,9 @@
 WemosDLEDenBuzzer::WemosDLEDenBuzzer(const std::string& ip, int port) : Wemos(ip, port) {}
 
 void WemosDLEDenBuzzer::aan(const std::string& kleur) {
-    if (kleur == "GROEN" && !ledroodstatus  && !ledgroenstatus) {
+    if (kleur == "GROEN" && !ledroodstatus && !ledgroenstatus) {
         ledgroenstatus = true;
-    } else if (kleur == "ROOD") {
+    } else if (kleur == "ROOD" && !ledroodstatus) {
         ledroodstatus = true;
         ledgroenstatus = false;
     }
