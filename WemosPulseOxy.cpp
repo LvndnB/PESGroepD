@@ -20,14 +20,14 @@ void WemosPulseOxy::checkPulse(const std::string& pulseString){
 
     pulse = std::stoi(pulseString);
 
-    if ((pulse > 90) && (alarm == 0)) {
+    if ((pulse > pulsegrenswaarde) && !alarm) {
         buzzer->buzzer(1);
         dualled->aan("ROOD");
         alarm = 1;
 
         pulseoxyLog->log("GRENSWAARDE HARTSLAG OVERSCHREDEN! Hartslag in BPM: " + pulseString);
 
-    } else if((alarm == 1) && (pulse < 91) ) {
+    } else if(alarm && (pulse <= pulsegrenswaarde) ) {
         buzzer->buzzer(0);
         dualled->uit("ROOD");
         alarm = 0;

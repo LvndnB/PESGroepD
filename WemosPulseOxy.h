@@ -13,6 +13,7 @@ class WemosPulseOxy : public Wemos {
 
     int pulse;
     int alarm = 0;
+    int pulsegrenswaarde = 90;
 
     public:
     WemosPulseOxy(const std::string&ip, int port, WemosDLEDenBuzzer* buz, WemosDLEDenBuzzer* led, Logger* pulseoxyLog);

@@ -44,13 +44,12 @@ void SocketServer::start() {
         if (sscanf(buffer, "%49[^=]=%19s", key, value) == 2) {
             std::string sKey(key), sValue(value);
             if (sKey == "ENCODERRPM") {
-                encoder->sendRPM(sValue);
-            } else if (sKey == "ENCODER_STATUS") {
-                encoder->sendStatus(sValue);
+                encoder->handleRPM(sValue);
             } else if (sKey == "HARTSLAGAVG") {
                 // Implementatie van HARTSLAG bijv naar Buzzer en dualLed (dus check grenswaarde in WemosPulseOxy)
                 pulseoxy->checkPulse(sValue);
-            } else if (sKey == "ZUURSTOF") {
+            } else if (sKey == "OXYGEN") {
+                pulseoxy->checkOxy(sValue);
                 // Implementatie van ZUURSTOF bijv naar datalogging
             }
         }
