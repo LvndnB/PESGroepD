@@ -23,5 +23,5 @@ class procflow {
         procflow(std::string uart_path):bus(uart_path) {}
 
         bool sendDataToDevice (device_t device, char *data, int lenght);
-        char *requestDataFromDevice(device_t device, sensors_and_actuator_enum);
+        char *requestDataFromDevice(device_t device, sensors_and_actuator_enum sensor);
 };

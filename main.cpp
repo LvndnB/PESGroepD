@@ -7,7 +7,7 @@ int main(int argc, char **argv) {
     procflow bus = procflow("/dev/ttyS0");
     while (true) {
         std::cout << std::endl << "----" << std::endl;
-        char *data = bus.requestDataFromDevice(STM2, "co2", 4);
+        char *data = bus.requestDataFromDevice(STM2, co2);
         std::cout << data;
         std::cout << std::endl << "----" << std::endl;
         usleep(5000);
