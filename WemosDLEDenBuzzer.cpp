@@ -21,7 +21,7 @@ void WemosDLEDenBuzzer::uit(const std::string& kleur) {
 
     if (kleur == "GROEN" && ledgroenstatus) {
         ledgroenstatus = false;
-    } else if (kleur == "ROOD" && ledgroenstatus) {
+    } else if (kleur == "ROOD" && ledroodstatus) {
         ledroodstatus = false;
     }
 
