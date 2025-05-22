@@ -16,7 +16,7 @@ void WemosPulseOxy::checkOxy(const std::string& oxyString){
 void WemosPulseOxy::checkPulse(const std::string& pulseString){
 
     
-    pulseoxyLog->log("Hartslag in BPM: " + pulseString);
+    
 
     pulse = std::stoi(pulseString);
 
@@ -31,6 +31,8 @@ void WemosPulseOxy::checkPulse(const std::string& pulseString){
         buzzer->buzzer(0);
         dualled->uit("ROOD");
         alarm = 0;
+
+        pulseoxyLog->log("Hartslag in BPM: " + pulseString);
     }
 
 }
