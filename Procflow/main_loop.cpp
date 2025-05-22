@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <cstdint>
 
 int us_to_ms = 1000;
 
@@ -26,12 +27,6 @@ typedef enum {
 
 int chipSelect = 0;
 
-
-/*typedef struct {
-   int device_size = 0;
-
-
-} device_state_rapport_t;*/
 
 bool sendDataToDevice(device_t device, char *data, int lenght) {
     uint8_t pdu_part[] = {'s', device};
