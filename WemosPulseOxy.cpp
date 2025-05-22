@@ -5,15 +5,27 @@
 #include <iostream>
 
 
-WemosPulseOxy::WemosPulseOxy(const std::string& ip, int port, WemosDLEDenBuzzer* buz, WemosDLEDenBuzzer* led) : Wemos(ip, port), buzzer(buz), dualled(led) {}
+WemosPulseOxy::WemosPulseOxy(const std::string& ip, int port, WemosDLEDenBuzzer* buz, WemosDLEDenBuzzer* led, Logger* pulseoxyLog) : Wemos(ip, port), buzzer(buz), dualled(led), pulseoxyLog(pulseoxyLog) {
+    
+}
+
+void WemosPulseOxy::checkOxy(const std::string& oxyString){
+    pulseoxyLog->log("Bloedzuurstofgehalte in %: " + oxyString);
+}
 
 void WemosPulseOxy::checkPulse(const std::string& pulseString){
+
+    
+    pulseoxyLog->log("Hartslag in BPM: " + pulseString);
+
     pulse = std::stoi(pulseString);
 
     if ((pulse > 90) && (alarm == 0)) {
         buzzer->buzzer(1);
         dualled->aan("ROOD");
         alarm = 1;
+
+        pulseoxyLog->log("GRENSWAARDE HARTSLAG OVERSCHREDEN! Hartslag in BPM: " + pulseString);
 
     } else if((alarm == 1) && (pulse < 91) ) {
         buzzer->buzzer(0);
