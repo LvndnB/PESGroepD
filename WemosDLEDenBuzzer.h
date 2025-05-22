@@ -10,6 +10,11 @@ public:
     void aan(const std::string& kleur);
     void uit(const std::string& kleur);
     void buzzer(int status);
+    bool isAan(const std::string& kleur);
+
+private:
+    bool ledgroenstatus = false;
+    bool ledroodstatus = false;
 };
 
 #endif
