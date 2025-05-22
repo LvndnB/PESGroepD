@@ -1,6 +1,4 @@
-#include <cstring>
-#include <exception>
-#include <stdio.h>
+#include <stdio.h>                      // printf
 #include <string>
 #include <unistd.h>                     //Used for UART
 #include <fcntl.h>                      //Used for UART
@@ -12,36 +10,27 @@
 
 uart_class::uart_class(std::string uart_path) {
 
-        // uart_path is the uri of the uart. /dev/ttyS0 for uart 1. /dev/ttyAMA3 for uart 3
-        // uart 1 rx is on ip 15 and tx 14.
-        // uart 3 rx is on 14 and  
-        // all the (gpio) pins can be found on https://pinout.xyz/
-        //
-        // O_READONLY Access modes (use 1 of these):
-        // O_NOCTTY - When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
-        fd = open(uart_path.c_str(), O_RDWR | O_NOCTTY);          //Open in non blocking read/write mode
+
+        // Open in non blocking read/write mode
+        fd = open(uart_path.c_str(), O_RDWR | O_NOCTTY);
         if (fd == -1)
         {
                 printf("Error - Unable to open UART.  Ensure it is not in use by another application\r\nwirering has not been tested\r\n");
                 return;
         }
 
+        // O_NOCTTY: 
+        // When set and path identifies a terminal device, open() shall not cause the terminal device to become the controlling terminal for the process.
+        //
+        // this is not a terminal... so no c tty
+
         //CONFIGURE THE UART
         // For all options see man://termios(3)
+        //
         struct termios options;
         tcgetattr(fd, &options);
         
-        cfmakeraw(&options); // RAWDOGING THIS SO READ DON'T HANG BECAUSE we do not use cc chars :). LET ME REPEAT THIS IS NOT A 
-        // raw makes input is available character by character,
-        // echoing is disabled, 
-        // and all special processing of terminal input and output characters is disabled.
-        // The terminal attributes are set as follows: 
-        /// termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-        // termios_p->c_oflag &= ~OPOST;
-        // termios_p->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-        // termios_p->c_cflag &= ~(CSIZE | PARENB);
-        // termios_p->c_cflag |= CS8;
-
+        cfmakeraw(&options);
 
         int baudspead = B19200;
         options.c_cflag = baudspead | CS8;
@@ -56,12 +45,12 @@ uart_class::uart_class(std::string uart_path) {
         cfsetispeed(&options, baudspead); 
         cfsetospeed(&options, baudspead);
         
-        options.c_iflag = IGNPAR; // if parity error remove char.
+        // options.c_iflag = IGNPAR; // if parity error remove char.
         options.c_oflag = 0;
         options.c_lflag = 0;
 
-        options.c_cc[VMIN] = 0; // minimal bytes that is needed for the read to finished.
-        options.c_cc[VTIME] = 9; // set read timeout to x/10 seconds (Decisecond)
+        options.c_cc[VMIN] = 1; // minimal bytes that is needed for the read to finished.
+        options.c_cc[VTIME] = 0; // set read timeout to x/10 seconds (Decisecond)
         tcflush(fd, TCIFLUSH);
         tcsetattr(fd, TCSANOW, &options);
 }
@@ -100,6 +89,7 @@ enum recvErr {
 
 int uart_class::receive(void *buff, int size)
 {
+    char *buff_ptr = (char *) buff;
     if (fd == -1)
     {
         return -2;
@@ -109,7 +99,7 @@ int uart_class::receive(void *buff, int size)
 
     while (true)
     {
-        int rx_length = read(fd, buff+buff_index, 1);
+        int rx_length = read(fd, buff_ptr+buff_index, 1);
 
         if (rx_length < 0) // is error
         { 
@@ -178,6 +168,7 @@ int uart_class::receive_null_termenated(char *buff, int size)
                 buff[buff_index+i] == 2) {
                 buff_index -= read_size; // to counteract the first ++
                 state = finding_end;
+                // TODO: trim data so that buff_index+i would be the first char in string
             } 
         }
         if (state == finding_start)
@@ -200,8 +191,4 @@ int uart_class::receive_null_termenated(char *buff, int size)
 
         }
     }
-}
-
-int uart_class::get_fd() {
-    return fd;
 }
