@@ -2,18 +2,20 @@
 #include <cstdlib>
 #include "WemosDLEDenBuzzer.h"
 
-WemosEncoder::WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led) : Wemos(ip, port), dualled(led) {}
+WemosEncoder::WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led, Logger* encoderLog) : Wemos(ip, port), dualled(led), encoderLog(encoderLog) {}
 
 
-void WemosEncoder::sendRPM(const std::string& rpm) {
+void WemosEncoder::handleRPM(const std::string& rpm) {
+    encoderLog->log("Encoder RPM: " + rpm);
+
+    float rpmFloat = std::stof(rpm);
     
-}
-
-void WemosEncoder::sendStatus(const std::string& status) {
-    if (status == "1") {
-        dualled->aan("GROEN");
-    } else {
+    if (rpmFloat == 0.0f && dualled->isAan("GROEN")) {
         dualled->uit("GROEN");
+    } else if (rpmFloat > 0.0f && !dualled->isAan("GROEN")) {
+        dualled->aan("GROEN");
     }
+
+
     
 }
