@@ -4,14 +4,15 @@
 
 #include "Wemos.h"
 #include "WemosDLEDenBuzzer.h"
+#include "Logger.h"
 
 class WemosEncoder : public Wemos {
 private:
 WemosDLEDenBuzzer* dualled;
+Logger* encoderLog;
 public:
-    WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led);
-    void sendRPM(const std::string& rpm);
-    void sendStatus(const std::string& status);
+    WemosEncoder(const std::string& ip, int port, WemosDLEDenBuzzer* led, Logger* encoderLog);
+    void handleRPM(const std::string& rpm);
 };
 
 #endif
