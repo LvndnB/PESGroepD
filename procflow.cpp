@@ -1,8 +1,22 @@
 #include "procflow.h"
+#include <ctime>
 #include <unistd.h>
 #include <cstdint>
 #include <memory>
+#include <sys/time.h>
 
+bool procflow::syncTime(device_t device) {
+    struct timeval timeval; 
+
+    time_t t = time(NULL);
+    struct tm localtime = {0};
+    localtime_r(&t, &localtime);
+
+    int timezone_minute_offset = localtime.tm_gmtoff/60;
+
+    int state = gettimeofday(&timeval, NULL);
+    return false;
+}
 
 bool procflow::sendDataToDevice(device_t device, char *data, int lenght) {
     uint8_t pdu_part[] = {'s', device};
