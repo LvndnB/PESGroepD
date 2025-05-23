@@ -2,15 +2,21 @@
 #include <cstdint>
 #include "uart_class.h"
 #include <string>
+#include <memory>
 
-typedef enum {
+typedef enum : uint8_t {
     STM1 = 0x20,
     STM2 = 0x21,
     STM3 = 0x22,
 } device_t;
 
 
-typedef enum {
+typedef struct {
+   std::unique_ptr<char> msg;
+   uart_class::uart_rx_rapport rapport;
+} rx_request_response;
+
+typedef enum : uint8_t {
 	klok = 'k',
 	co2 = 'c',
 	temp = 't'
@@ -22,6 +28,7 @@ class procflow {
     public:
         procflow(std::string uart_path):bus(uart_path) {}
 
+        bool syncTime(device_t);
         bool sendDataToDevice (device_t device, char *data, int lenght);
-        char *requestDataFromDevice(device_t device, sensors_and_actuator_enum sensor);
+        rx_request_response requestDataFromDevice(device_t device, sensors_and_actuator_enum sensor);
 };

@@ -52,9 +52,14 @@ class uart_class {
          */
         int receive(void *buff, int size);
 
+        typedef struct {
+            int error;
+            std::string msg;
+            int recieved_bytes;
+        } uart_rx_rapport;
+
         /**
          * receive a none deterministic size of data
          */
-        int receive_null_termenated(char *buff, int buffsize);
-
+        uart_class::uart_rx_rapport receive_null_termenated(char *buff, int size);
 };
