@@ -5,14 +5,13 @@
 int positie = 0;
 int lastCLK;
 unsigned long lastTime = 0;
-unsigned long firstTime = 0;         // Eerste tijd in de periode
-float snelheid = 0;                  // pulsen per seconde
-float rpm = 0;                       // Huidige RPM
-float avgRPM = 0;                    // Gemiddelde RPM over de laatste periode
-const int positiesPerRotatie = 20;   // Aantal posities per volledige rotatie
-unsigned long positieTeller = 0;     // Telt het aantal posities in de laatste periode
-unsigned long lastRPMTime = 0;       // Tijdstip van laatste RPM berekening
-const unsigned long periode = 5000;  // 5 seconden in milliseconden
+unsigned long firstTime = 0;
+float snelheid = 0;
+float rpm = 0;
+float avgRPM = 0;
+const int positiesPerRotatie = 20;
+unsigned long positieTeller = 0;
+const unsigned long periode = 5000;
 
 int isMoving = 0;
 int rpmreset = 0;
@@ -20,17 +19,19 @@ unsigned long laatsteBeweging = 0;
 
 const char* ssid = "Revalidatie";
 const char* password = "Revalidatie";
-const char* serverIP = "192.168.0.101";  // IP van de Raspberry Pi
+const char* serverIP = "192.168.0.101";
 const int serverPort = 12345;
 
 WiFiClient client;
+
+unsigned long lastSendTime = 0;
 
 void setup() {
   pinMode(CLK, INPUT_PULLUP);
   Serial.begin(9600);
   lastCLK = digitalRead(CLK);
-  firstTime = millis();        // Stel de starttijd in voor de periode
-  laatsteBeweging = millis();  // Tijd sinds de laatste beweging
+  firstTime = millis();
+  laatsteBeweging = millis();
 
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) delay(500);
@@ -40,86 +41,68 @@ void setup() {
 void loop() {
   int currentCLK = digitalRead(CLK);
 
-  // Detecteer alleen de randen van de CLK signaal (rising edge)
-  if (currentCLK != lastCLK && currentCLK == HIGH) {  // Rising edge (van LOW naar HIGH)
-    unsigned long currentTime = micros();             // Tijd in microseconden
+  if (currentCLK != lastCLK && currentCLK == HIGH) {
+    unsigned long currentTime = micros();
     unsigned long timeDiff = currentTime - lastTime;
 
-    // Snelheidsberekening (pulsen per seconde)
     if (timeDiff > 0) {
-      snelheid = 1000000.0 / timeDiff;  // Posities per seconde
+      snelheid = 1000000.0 / timeDiff;
     }
 
-    lastTime = currentTime;  // Update de laatste tijd
-
-    // Bijwerken van de positie
+    lastTime = currentTime;
     positie++;
-    positieTeller++;  // Tel het aantal posities voor het gemiddelde RPM
-
-    // Bereken RPM (posities per minuut gedeeld door 20 voor rotaties)
+    positieTeller++;
     rpm = (snelheid * 60) / positiesPerRotatie;
 
-    // Bijwerken van de gemiddelde RPM
     unsigned long currentMillis = millis();
     unsigned long elapsedTime = currentMillis - firstTime;
 
-    // Als we binnen de laatste periode zitten, rekent het gemiddelde uit
     if (elapsedTime <= periode) {
-      avgRPM = (positieTeller * 60.0) / (positiesPerRotatie * (elapsedTime / 1000.0));  // Gemiddelde RPM over de laatste periode
+      avgRPM = (positieTeller * 60.0) / (positiesPerRotatie * (elapsedTime / 1000.0));
     } else {
-      // Na 10 seconden resetten
       firstTime = currentMillis;
       positieTeller = 0;
     }
 
-    // Output naar Serial Monitor
-    /*Serial.print("Positie: ");
-    Serial.print(positie);
-    Serial.print(" | Snelheid: ");
-    Serial.print(snelheid);*/
     Serial.print(" pos/sec | Huidige RPM: ");
     Serial.print(rpm);
     Serial.print(" | Gemiddelde RPM: ");
     Serial.println(avgRPM);
 
-    // Controleer of de encoder net is gestart met bewegen
-    
     if (!isMoving) {
       isMoving = 1;
-      /*if (client.connect(serverIP, serverPort)) {
+    }
+
+    laatsteBeweging = millis();
+    rpmreset = 0;
+  }
+
+  // Elke seconde versturen
+  if (millis() - lastSendTime >= 1000) {
+    lastSendTime = millis();
+
+    // Als er geen beweging is gedurende 1s, stuur eenmalig 0 en zet avgRPM op 0
+    if (millis() - laatsteBeweging > 1000) {
+      if (!rpmreset) {
+        avgRPM = 0;  // Zet avgRPM op 0 bij stilstand
+        if (client.connect(serverIP, serverPort)) {
+          char buffer[50];
+          sprintf(buffer, "ENCODERRPM=0\n");
+          client.print(buffer);
+          client.stop();
+        }
+        rpmreset = 1;  // Zorg dat we dit maar één keer doen
+      }
+    } else {
+      // Beweging actief → normale verzending
+      if (client.connect(serverIP, serverPort)) {
         char buffer[50];
-        sprintf(buffer, "ENCODER_STATUS=1\n");
+        sprintf(buffer, "ENCODERRPM=%.2f\n", avgRPM);
         client.print(buffer);
         client.stop();
-        Serial.println("Status=1");
       }
-      */
-    }
-    
-
-    laatsteBeweging = millis();  // Reset de stilstandtimer
-    rpmreset = 0;
-
-
-    if (client.connect(serverIP, serverPort)) {  // Connect met Server: RPiA
-      char buffer[50];                           // Buffer voor de geformatteerde string
-      sprintf(buffer, "ENCODERRPM=%.2f\n", avgRPM);
-      client.print(buffer);
-      client.stop();
     }
   }
 
-
-  // stuur rpm=0 als de encoder niet meer draait
-  if (isMoving && !rpmreset && (millis() - laatsteBeweging > 1000)) {
-    if (client.connect(serverIP, serverPort)) {
-      char buffer[50];
-      sprintf(buffer, "ENCODERRPM=0\n");
-      client.print(buffer);
-      client.stop();
-    }
-    rpmreset = 1;
-  }
-  
-  lastCLK = currentCLK;  // Update de vorige CLK waarde
+  lastCLK = currentCLK;
 }
