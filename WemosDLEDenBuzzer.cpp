@@ -39,5 +39,6 @@ bool WemosDLEDenBuzzer::isAan(const std::string& kleur) {
     } else if (kleur == "ROOD") {
         return ledroodstatus;
     }
+    return false;
 
 }
