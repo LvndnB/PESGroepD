@@ -73,26 +73,29 @@ void loop() {
     }
 
     // Output naar Serial Monitor
-    Serial.print("Positie: ");
+    /*Serial.print("Positie: ");
     Serial.print(positie);
     Serial.print(" | Snelheid: ");
-    Serial.print(snelheid);
+    Serial.print(snelheid);*/
     Serial.print(" pos/sec | Huidige RPM: ");
     Serial.print(rpm);
     Serial.print(" | Gemiddelde RPM: ");
     Serial.println(avgRPM);
 
     // Controleer of de encoder net is gestart met bewegen
+    
     if (!isMoving) {
       isMoving = 1;
-      if (client.connect(serverIP, serverPort)) {
+      /*if (client.connect(serverIP, serverPort)) {
         char buffer[50];
         sprintf(buffer, "ENCODER_STATUS=1\n");
         client.print(buffer);
         client.stop();
         Serial.println("Status=1");
       }
+      */
     }
+    
 
     laatsteBeweging = millis();  // Reset de stilstandtimer
     rpmreset = 0;
@@ -117,6 +120,6 @@ void loop() {
     }
     rpmreset = 1;
   }
-
+  
   lastCLK = currentCLK;  // Update de vorige CLK waarde
 }
