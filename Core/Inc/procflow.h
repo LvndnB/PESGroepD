@@ -13,4 +13,6 @@ typedef enum {
 	temp = 't'
 } sensors_and_actuator_enum;
 
+void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val);
+
 #endif

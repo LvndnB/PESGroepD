@@ -98,22 +98,45 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 	switch (method) {
 
 	case 's': // Rpi has (S)end data to stm
-		HAL_Delay(5);
+		HAL_Delay(40);
 		char _[99]  = "";
 		int lcount = 0;
 		int val = 0;
 		if (strlen(begin_data)!= 0) {
 			sscanf(begin_data, "%20[^:]:%d:%d", _, &lcount, &val);
-			HAL_UART_Transmit(usb_uart, "msg got ", 2, 5000);
+			snprintf(_, sizeof(_), "Got lcount: %d val: %d\r\n", lcount, val);
+			HAL_UART_Transmit(usb_uart, _, strlen(_), 5000);
 		}
 		HAL_UART_Transmit(&usb_uart, "\r\n", 2, 5000);
 		break;
 
 	case 'r': // rpi (R)equest data from stm
-		HAL_Delay(1);
-		uint8_t msg[200] = {0};
-		snprintf(msg, sizeof(msg), "co2:%d:%d", 1, co2value);
-		HAL_UART_Transmit(bus_uart, msg, strlen(msg), 1000);
+
+		GPIO_PinState st = 0;
+
+		for (int i = 0; i < 4; i++) {
+			st = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12);
+			if (st == GPIO_PIN_SET) {
+				break;
+			}
+			HAL_Delay(1);
+		}
+		//HAL_Delay(12);
+
+		uint8_t ascii_start = 2; // (ascii start of text. But i'm using it as start of transmission)
+		HAL_UART_Transmit(bus_uart, &ascii_start, 1, 1000);
+
+		if (st == GPIO_PIN_SET) {
+			uint8_t msg[200] = "GPIO:111111111111";
+			HAL_UART_Transmit(bus_uart, msg, strlen(msg)+1, 1000);
+			HAL_Delay(10);
+		} else {
+			uint8_t msg[200] = "HOI dit is aron";
+			HAL_UART_Transmit(bus_uart, msg, strlen(msg)+1, 1000);
+			HAL_Delay(10);
+
+		}
+
 		bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transever
 		break;
 
@@ -130,5 +153,6 @@ void procflow_register_string(sensors_and_actuator_enum dev, char *val) {
 }
 
 void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val) {
+
 	co2value = val;
 }
