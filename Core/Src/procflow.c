@@ -18,6 +18,10 @@
 #include "main.h"
 #include "procflow.h"
 
+/***
+ * This functions writes the prefered setting to the correct registers. And it is preferdly called in
+ * stm32l4xx_hal_msp.c. But for refactoring purposes it is currently called in the main function. (So i do not forget)
+ */
 void uart_init_configuration(UART_HandleTypeDef *huart) {
 	// c binary operations cheat sheet
 	// ~ bitwise NOT
@@ -43,17 +47,18 @@ void uart_init_configuration(UART_HandleTypeDef *huart) {
 /**
  * this is called in stm32l4xx_it.c USART1_IRQHandler
  *
- * and
+ * It stores the found address location in the next item of uart_pdu_ptr array. 
+ * And its also handels some quick actions that is required.
  */
 void handle_charactor_match_interupt(DMA_HandleTypeDef *hdma_usartx_rx, UART_HandleTypeDef *huart) {
 	uint32_t dma_writingpoint  =  uart_buff_size - hdma_usartx_rx->Instance->CNDTR;
 
-	// Find the address location
-	//
-	// because there is a slight timing difference when DMA catches a new char and when this is run. We need to check an range
-	//
+	/* Find the location of the address byte */
+
+	// because there is a slight timing difference when DMA catches a new char and when this
+    // is run. We need to check an range of locations including a location that has been reported that has not been received. (i = -1)
 	uint8_t *id_location = 0;
-	for (int i = -1; i < 3; i++) {                                  // negative 1 is so it also gonna look for a future byte in case that this interrupt is faster than when CNDTR
+	for (int i = -1; i < 3; i++) {                                  
 		if (uart_rx_buffer[dma_writingpoint - i] == device_id) {
 			id_location = &uart_rx_buffer[dma_writingpoint - i];
 			break;
@@ -65,25 +70,32 @@ void handle_charactor_match_interupt(DMA_HandleTypeDef *hdma_usartx_rx, UART_Han
 		return;
 	}
 
-	// pdu example
-	// +---------+-----------+--------+-----+-----+
-	// | method  | Device ID | DATA   : ... | null|
-	// +---------+-----------+--------+-----+-----+
+    /* handeling method's requirements */
+    const uint8_t method = *(id_location - 1);
 
-	// attach transmitter early so that the pi does not sees values in noise.
-	if ( *(id_location - 1) == 'r') {
-		huart->Instance->CR1 |= USART_CR1_TE; // attach transmitter
-		uart_fast_pdu = id_location;
-		// TODO: force context switch so it does not wait 50ms per device. Or 150 ms total because it is 3 devices.
-	}
+    switch (method) {
+
+        // attach transmitter early so that the pi does not sees values in noise.
+        case 'r':
+            huart->Instance->CR1 |= USART_CR1_TE; // attach transmitter
+            uart_fast_pdu = id_location;
+            break;
+    }
 
 	uart_pdu_wrinting_point++;
 	if (uart_pdu_wrinting_point == 128 /*max*/ - 1 /* corrects the index because its starts at 0*/) {
 		uart_pdu_wrinting_point = 0;
 	}
 }
+
 uint64_t co2value = 0;
 
+/**
+ * It is called in the main while and handles request send from master.
+ * We do not handle everything in the interrupt because than it is likely 
+ * we break sensors and the DMA.
+ *
+ */
 void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_HandleTypeDef *usb_uart) {
 
 	// pdu example
@@ -140,18 +152,23 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 		bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transever
 		break;
 
-	case 'h': // request already (H)andled
-		break;
-
-	default: // idk pdu mallformed?
+	default: // idk pdu malformed?
 		break;
 	}
 
 }
 
-void procflow_register_string(sensors_and_actuator_enum dev, char *val) {
+/**
+ * NOT IMPLEMENTED. TODO: implement this
+ */
+void procflow_register_float(sensors_and_actuator_enum dev, uint64_t val) {
+
 }
 
+/**
+ * This registers unsigned 64 bit values to be send by the `r` method. For sensors (co2)
+ * NOT IMPLEMENTED. TODO: implement this
+ */
 void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val) {
 
 	co2value = val;

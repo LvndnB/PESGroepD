@@ -144,9 +144,15 @@ uint8_t SGP30_CheckConnection(void) {
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
+ * @brief  The application entry point.
+ *
+ * Index:                   <br>
+ * HAL init                 <br>
+ * Enable all peripherals   <br>
+ * Enable user sensors      <br>
+ *
+ * @retval int
+ */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -188,13 +194,6 @@ int main(void)
 	// Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
 	UART_Print("CO2 sensor gedetecteerd!\r\n");
 	SGP30_Init();
-
-	// c binary operations cheat sheet
-	// ~ bitwise NOT
-	// & bitwise AND
-	// ^ bitwise XOR
-	// | bitwise OR
-
 
 	uart_init_configuration(&huart1);
 
