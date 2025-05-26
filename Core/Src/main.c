@@ -83,25 +83,6 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-/**
- * Use this when it is likely that buff is not filled
- */
-int bus_check_has_recieved(char *buff, int length) {
-	const int len_offset_buff =  ((int) ( (void *) buff - (void *) uart_rx_buffer ) );
-
-	if (length + len_offset_buff  > uart_buff_size) {
-		return 2; // overflow... Wrap not jet implemented TODO
-	}
-
-	if (len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
-		return 0; // an wrap has occurred
-	}
-
-	if (length + len_offset_buff < uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
-		return 0; // it fits
-	}
-
-}
 
 // Init voor de SGP30 Sensor
 void SGP30_Init(void) {

@@ -45,6 +45,26 @@ void uart_init_configuration(UART_HandleTypeDef *huart) {
 }
 
 /**
+ * Use this when it is likely that buff is not filled
+ */
+int procflow_check_if_buff_size_is_at_least_been_recieved(char *buff, int length) {
+	const int len_offset_buff =  ((int) ( (void *) buff - (void *) uart_rx_buffer ) );
+
+	if (length + len_offset_buff  > uart_buff_size) {
+		return 2; // overflow... Wrap not jet implemented TODO
+	}
+
+	if (len_offset_buff > uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+		return 0; // an wrap has occurred
+	}
+
+	if (length + len_offset_buff < uart_buff_size - hdma_usart1_rx.Instance->CNDTR) {
+		return 0; // it fits
+	}
+
+}
+
+/**
  * this is called in stm32l4xx_it.c USART1_IRQHandler
  *
  * It stores the found address location in the next item of uart_pdu_ptr array. 
