@@ -114,7 +114,7 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 		char _[99]  = "";
 		int lcount = 0;
 		int val = 0;
-		if (strlen(begin_data)!= 0) {
+		if (strlen(begin_data)!= 0) { // WARNING when copying. Make sure that the nullbyte is also send.
 			sscanf(begin_data, "%20[^:]:%d:%d", _, &lcount, &val);
 			snprintf(_, sizeof(_), "Got lcount: %d val: %d\r\n", lcount, val);
 			HAL_UART_Transmit(usb_uart, _, strlen(_), 5000);
@@ -133,23 +133,17 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 			}
 			HAL_Delay(1);
 		}
-		//HAL_Delay(12);
-
-		uint8_t ascii_start = 2; // (ascii start of text. But i'm using it as start of transmission)
-		HAL_UART_Transmit(bus_uart, &ascii_start, 1, 1000);
 
 		if (st == GPIO_PIN_SET) {
 			uint8_t msg[200] = "GPIO:111111111111";
-			HAL_UART_Transmit(bus_uart, msg, strlen(msg)+1, 1000);
+			procflow_send(bus_uart, msg, strlen(msg));
 			HAL_Delay(10);
 		} else {
 			uint8_t msg[200] = "HOI dit is aron";
-			HAL_UART_Transmit(bus_uart, msg, strlen(msg)+1, 1000);
-			HAL_Delay(10);
-
+			procflow_send(bus_uart, msg, strlen(msg));
 		}
 
-		bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transever
+		bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transmitter
 		break;
 
 	default: // idk pdu malformed?
@@ -163,6 +157,19 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
  */
 void procflow_register_float(sensors_and_actuator_enum dev, uint64_t val) {
 
+}
+
+bool procflow_send(UART_HandleTypeDef *bus_uart, uint8 *arr, int len) {
+	uint8_t startbyte, ascii_start_text = 2; // (ascii start of text. But i'm using it as start of transmission)
+	HAL_UART_Transmit(bus_uart, &startbyte, 1, 1000);
+
+	HAL_UART_Transmit(bus_uart, arr, len, 1000);
+
+	uint8_t endbyte = 0;
+	HAL_UART_Transmit(bus_uart, &endbyte, 1, 1000);
+	HAL_Delay(10);
+
+	return true; // TODO ack
 }
 
 /**
