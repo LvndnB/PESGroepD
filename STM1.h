@@ -7,7 +7,6 @@ private:
 
 public:
     STM1();
-    double getLuchtkwaliteit();
     void handleTemperatureRGB(double temp);
 private:
     double temperatuur;

@@ -4,10 +4,6 @@
 
 STM1::STM1(){}
 
-double STM1::getLuchtkwaliteit(){
-    // luchtkwaliteitLogger->log("Temperatuu: " + temperatuur + "CO2: " + co2 + "Luchtvochtigheid: " + luchtvochtigheid);
-    handleTemperatureRGB(temperatuur);
-}
 
 void STM1::handleTemperatureRGB(double temperature) {
     if (temperature < 18.0) temperature = 18.0;
