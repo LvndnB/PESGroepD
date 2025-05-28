@@ -5,5 +5,8 @@
             "binaryPath": "/home/rpib/Documents/pi_b/debug.out",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "cstdlib": "cpp"
+    }
 }
