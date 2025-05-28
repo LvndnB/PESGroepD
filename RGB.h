@@ -13,6 +13,7 @@ public:
     RGB();
     void sendToActuator(int r, int g, int b, device_t device) override;
 
+
 private:
 
 };

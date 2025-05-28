@@ -12,7 +12,9 @@ private:
 public:
     Luchtkwaliteit(RGB* rgbtemp);
     void requestFromSensor();
+
     void requestFromSensor2();
+
     void temperatureNaarRGB(double temp);
 
 private:

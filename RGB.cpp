@@ -11,6 +11,8 @@ void RGB::sendToActuator(int r, int g, int b, device_t device) {
     sprintf(hexColor, "rgb=#%02X%02X%02X", r, g, b);
 
 
+
+
     procflow bus = procflow("/dev/ttyS0");
     bus.sendDataToDevice(device, hexColor, strlen(hexColor));
 }
