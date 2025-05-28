@@ -12,6 +12,7 @@ void Luchtkwaliteit::requestFromSensor() {
     rx_request_response rapport = bus.requestDataFromDevice(STM2, temp);
 
     if (rapport.rapport.error == 0) {
+<<<<<<< HEAD
         temperatureNaarRGB(std::atof(rapport.msg.get())); // Hier moet nog parsing voor key=value
     }
 
@@ -24,6 +25,9 @@ void Luchtkwaliteit::requestFromSensor2() {
 
     if (rapport.rapport.error == 0) {
         //temperatureNaarRGB(std::atof(rapport.msg.get()));
+=======
+        temperatureNaarRGB(std::atof(rapport.msg.get()));
+>>>>>>> a7fdca2cacfe10120421fd22347cd5c20142f8f3
     }
 
 }

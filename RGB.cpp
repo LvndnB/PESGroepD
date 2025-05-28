@@ -7,8 +7,16 @@
 RGB::RGB() {}
 
 void RGB::sendToActuator(int r, int g, int b, device_t device) {
+<<<<<<< HEAD
     char hexColor[12];
     sprintf(hexColor, "rgb=#%02X%02X%02X", r, g, b);
+=======
+    char hexColor[8];
+    sprintf(hexColor, "#%02X%02X%02X", r, g, b);
+	// Hier zou de code komen om de RGB-waarden naar de hardware te sturen
+	// Bijvoorbeeld: bus->send(hexColor);
+	// Voor nu is het een placeholder functie
+>>>>>>> a7fdca2cacfe10120421fd22347cd5c20142f8f3
 
 
     procflow bus = procflow("/dev/ttyS0");
