@@ -46,7 +46,7 @@ void uart_init_configuration(UART_HandleTypeDef *huart) {
 
 /**
  * Use this when it is likely that buff is not filled
- */
+ *
 int procflow_check_if_buff_size_is_at_least_been_recieved(char *buff, int length) {
 	const int len_offset_buff =  ((int) ( (void *) buff - (void *) uart_rx_buffer ) );
 
@@ -62,7 +62,7 @@ int procflow_check_if_buff_size_is_at_least_been_recieved(char *buff, int length
 		return 0; // it fits
 	}
 
-}
+}*/
 
 /**
  * this is called in stm32l4xx_it.c USART1_IRQHandler
@@ -179,7 +179,7 @@ void procflow_register_float(sensors_and_actuator_enum dev, uint64_t val) {
 
 }
 
-bool procflow_send(UART_HandleTypeDef *bus_uart, uint8 *arr, int len) {
+int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
 	uint8_t startbyte, ascii_start_text = 2; // (ascii start of text. But i'm using it as start of transmission)
 	HAL_UART_Transmit(bus_uart, &startbyte, 1, 1000);
 
