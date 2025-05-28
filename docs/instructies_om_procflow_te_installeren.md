@@ -2,7 +2,7 @@
 
 In dit document kan je instructies vinden om procflow (working title) op een stm32 te installeren op een met STM32CubeIDE. 
 
-Om dat op de meeste STM’s uart 1 stabielste en snelste is. Wordt er in dit  
+Om dat op de meeste STM’s uart 1 stabielste en snelste is. Wordt er in deze instructie  
 
  
 
@@ -34,11 +34,11 @@ Dat was het.
 Sla de ioc op. En genereer code. 
 
  
-Stap 2: Kopieer de laatste versie van procflow.c en procflow.h naar je project. 
+# Stap 2: Kopieer de laatste versie van procflow.c en procflow.h naar je project. 
 
  
 
-Stap 3: Installeer de interrupt handdeler in stm32l4xx_it.c  
+# Stap 3: Installeer de interrupt handdeler in stm32l4xx_it.c  
 
  
 ```c
