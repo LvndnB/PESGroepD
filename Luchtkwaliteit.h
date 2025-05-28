@@ -1,7 +1,7 @@
 #ifndef LUCHTKWALITEIT_H
 #define LUCHTKWALITEIT_H
 
-#include "RGB.h"
+#include "Ventilator.h"
 #include "SensorInterface.h"
 
 class Luchtkwaliteit : public SensorInterface
@@ -10,18 +10,15 @@ private:
 
 
 public:
-    Luchtkwaliteit(RGB* rgbtemp);
-    void requestFromSensor();
-
-    void requestFromSensor2();
-
-    void temperatureNaarRGB(double temp);
+    Luchtkwaliteit(Ventilator* ventilator);
+    void requestFromSensor() override;
+    void luchtkwaliteitNaarSpeed();
 
 private:
     double temperatuur;
     int co2value;
     int luchtvochtigheid;
-    RGB* rgbtemp;
+    Ventilator* ventilator;
 
 
 };

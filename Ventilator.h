@@ -11,7 +11,8 @@ private:
 
 public:
     Ventilator();
-    void sendToActuator(int speed, device_t device);
+    void sendToActuator(std::string key, std::string value, device_t device) override;
+    void makeSpeedMessage(int speed);
 
 private:
 

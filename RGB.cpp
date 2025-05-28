@@ -6,14 +6,19 @@
 
 RGB::RGB() {}
 
-void RGB::sendToActuator(int r, int g, int b, device_t device) {
-    char hexColor[12];
-    sprintf(hexColor, "rgb=#%02X%02X%02X", r, g, b);
-
-
+void RGB::sendToActuator(std::string key, std::string value, device_t device) {
+    char msg[100];
+    sprintf(msg, "%s=%s", key, value);
 
 
     procflow bus = procflow("/dev/ttyS0");
-    bus.sendDataToDevice(device, hexColor, strlen(hexColor));
+    bus.sendDataToDevice(device, msg, strlen(msg));
 }
 
+void RGB::makeRGBMessage(int r, int g, int b){
+    char hexColor[8];
+    sprintf(hexColor, "#%02X%02X%02X", r, g, b);
+
+    sendToActuator("rgb", hexColor, STM1);
+
+}

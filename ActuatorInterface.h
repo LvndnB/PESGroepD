@@ -7,9 +7,7 @@ class ActuatorInterface
 {
 public:
     virtual ~ActuatorInterface() {};
-    virtual void sendToActuator(int r, int g, int b, device_t device) = 0;
-    virtual void sendToActuator(int r, int g, int b, device_t device) = 0;
-    virtual void sendToActuator() = 0;
+    virtual void sendToActuator(std::string key, std::string value, device_t device) = 0;
 };
 
 #endif

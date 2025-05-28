@@ -11,7 +11,8 @@ private:
 
 public:
     RGB();
-    void sendToActuator(int r, int g, int b, device_t device) override;
+    void sendToActuator(std::string key, std::string value, device_t device) override;
+    void makeRGBMessage(int r, int g, int b);
 
 
 private:

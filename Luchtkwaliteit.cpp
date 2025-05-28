@@ -3,51 +3,86 @@
 #include <cstdlib>
 
 
-Luchtkwaliteit::Luchtkwaliteit(RGB* rgbtemp) : rgbtemp(rgbtemp) {}
+Luchtkwaliteit::Luchtkwaliteit(Ventilator* ventilator) : ventilator(ventilator) {}
 
 
 void Luchtkwaliteit::requestFromSensor() {
+    int sensorCheck = 0;
+
     procflow bus = procflow("/dev/ttyS0");
 
     rx_request_response rapport = bus.requestDataFromDevice(STM2, temp);
 
     if (rapport.rapport.error == 0) {
-        temperatureNaarRGB(std::atof(rapport.msg.get())); // Hier moet nog parsing voor key=value
+        std::string key;
+        std::string value;
+        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+        if (strcmp(key, "temp") == 0){
+            temperatuur = std::atof(value);
+            sensorCheck++;
+        }
+        
     }
-
-}
-
-void Luchtkwaliteit::requestFromSensor2() {
-    procflow bus = procflow("/dev/ttyS0");
 
     rx_request_response rapport = bus.requestDataFromDevice(STM2, co2);
 
     if (rapport.rapport.error == 0) {
-        //temperatureNaarRGB(std::atof(rapport.msg.get()));
+        std::string key;
+        std::string value;
+        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+        if (strcmp(key, "co2") == 0){
+            co2value = std::atoi(value);
+            sensorCheck++;
+        }
+        
+    }
+
+    rx_request_response rapport = bus.requestDataFromDevice(STM2, lucht);
+
+    if (rapport.rapport.error == 0) {
+        std::string key;
+        std::string value;
+        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+        if (strcmp(key, "lucht") == 0){
+            luchtvochtigheid = std::atoi(value);
+            sensorCheck++;
+        }
+        
+    }
+
+    if (sensorCheck == 3){
+        luchtkwaliteitNaarSpeed();
     }
 
 }
 
+void Luchtkwaliteit::luchtkwaliteitNaarSpeed(){
+    float score = 0.0;
 
-void Luchtkwaliteit::temperatureNaarRGB(double temperature) {
-    if (temperature < 18.0) temperature = 18.0;
-    if (temperature > 24.0) temperature = 24.0;
+    // Normaliseer en bepaal scores tussen 0 en 1
+    float tempScore = (temperatuur > 25) ? (temperatuur - 25) / 10.0 : 0;
+    if (tempScore > 1) tempScore = 1;
 
-    // Temp schaal 18�24�C naar 2700�6500K
-    int kelvin = 2700 + (24.0 - temperature) * 633;
+    float co2Score = (float)co2value / 1200.0;  //  max 1200 ppm
+    if (co2Score > 1) co2Score = 1;
 
-    // Eenvoudige RGB-schatting
-    int r = kelvin < 6600 ? 255 : 255 - (kelvin - 6600) / 10;
-    int g = kelvin < 6600 ? (kelvin - 2700) * 255 / 3900 : 255;
-    int b = kelvin < 5000 ? 0 : (kelvin - 5000) * 255 / 1500;
+    float humScore = 0;
+    if (luchtvochtingheid < 30)
+        humScore = (30 - luchtvochtingheid) / 30.0;
+    else if (luchtvochtingheid > 70)
+        humScore = (luchtvochtingheid - 70) / 30.0;
 
-    // Zorg dat rgb binnen limiet zit
-    if (r < 0) r = 0;
-    if (r > 255) r = 255;
-    if (g < 0) g = 0;
-    if (g > 255) g = 255;
-    if (b < 0) b = 0;
-    if (b > 255) b = 255;
-    
-	rgbtemp->sendToActuator(r, g, b, STM1);
+    if (humScore > 1) humScore = 1;
+
+    // Combineer gewogen scores
+    score = tempScore * 0.3 + co2Score * 0.5 + humScore * 0.2;
+
+    // Schaal naar 0–100
+    int snelheid = (int)(score * 100);
+
+    ventilator->makeSpeedMessage(snelheid);
+
+
 }
+
+
