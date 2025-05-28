@@ -131,44 +131,52 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 
 	case 's': // Rpi has (S)end data to stm
 		HAL_Delay(40);
-		char _[99]  = "";
-		int lcount = 0;
-		int val = 0;
+		char key[99]  = "";
+		char val[99] = "";
 		if (strlen(begin_data)!= 0) { // WARNING when copying. Make sure that the nullbyte is also send.
-			sscanf(begin_data, "%20[^:]:%d:%d", _, &lcount, &val);
-			snprintf(_, sizeof(_), "Got lcount: %d val: %d\r\n", lcount, val);
-			HAL_UART_Transmit(usb_uart, _, strlen(_), 5000);
+			sscanf(begin_data, "%20[^=]=%s", key, val);  // parsing van key=value // op de pi moet:	bus.sendDataToDevice(device, "key=value", strlen(key=value));
+
+			if (strcmp(key, "rgb" == 0)) { // hier moet een key ingevuld worden voor de juiste afhandeling van berichten
+				setRGB(val);			// functie in de main.c die aangeroepen moet worden bij deze key
+			}
+
+			// MOGELIJKE DEBUGGING HIERONDER TOT BREAK
+				// snprintf(_, sizeof(key), "Got lcount: %d val: %d\r\n", lcount, val);
+				// HAL_UART_Transmit(usb_uart, key, strlen(key), 5000);
 		}
-		HAL_UART_Transmit(&usb_uart, "\r\n", 2, 5000);
+		// HAL_UART_Transmit(&usb_uart, "\r\n", 2, 5000);
 		break;
 
 	case 'r': // rpi (R)equest data from stm
+		if (strlen(begin_data) != 0) {
 
-		GPIO_PinState st = 0;
+			switch (*data) { // switch case voor de juiste key voor request
+				case 't':	// request temperatuur, kan veranderd worden met een andere key die op de pi procflow.h staat
 
-		for (int i = 0; i < 4; i++) {
-			st = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_12);
-			if (st == GPIO_PIN_SET) {
+					char[key] = "temp"; // key die op de pi wordt gebruikt om te controleren of de waarde van temperatuur is
+					int value;
+					//  <- hier moet de waarde als return van een functie in de main.c (bijv. value = getTemp();)
+
+					
+					uint8_t msg[100]; // Hier komt de key=value in te staan voor de response
+					
+					sprintf(msg, "%s=%d", key, value); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+					procflow_send(bus_uart, msg, strlen(msg));
+					break;
+
+				case 'c': // request co2 value
+					break;
+				}
+
+				bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transmitter
+				break;
+
+			default: // idk pdu malformed?
 				break;
 			}
-			HAL_Delay(1);
 		}
 
-		if (st == GPIO_PIN_SET) {
-			uint8_t msg[200] = "GPIO:111111111111";
-			procflow_send(bus_uart, msg, strlen(msg));
-			HAL_Delay(10);
-		} else {
-			uint8_t msg[200] = "HOI dit is aron";
-			procflow_send(bus_uart, msg, strlen(msg));
-		}
-
-		bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transmitter
-		break;
-
-	default: // idk pdu malformed?
-		break;
-	}
+		
 
 }
 
@@ -189,7 +197,7 @@ int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
 	HAL_UART_Transmit(bus_uart, &endbyte, 1, 1000);
 	HAL_Delay(10);
 
-	return true; // TODO ack
+	return 1; // TODO ack
 }
 
 /**
