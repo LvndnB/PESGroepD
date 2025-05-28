@@ -59,22 +59,59 @@ if (huart1.Instance->ISR & USART_ISR_CMF_Msk) { // on character match interrupt
 
 # Stap 4: Installeer de variabelen in main.c en verander de device id. 
 
+```c
+/* USER CODE BEGIN PV */
+const uint8_t device_id = 0x22;
+uint8_t uart_rx_buffer[uart_buff_size] = {0};   // this line is around 31% of memory
+                                                // I think some of the code must also be in memory 
+
+uint8_t **uart_pdu_ptr[128] = {0};
+uint8_t *uart_fast_pdu = 0;
+int uart_pdu_wrinting_point = 0;
+int uart_current_pdu = 0;
+
+
+/* USER CODE END PV */
+```
+
+Vergeet niet de device_id aan te passen voor de juiste STM, 
+    STM1 = 0x20,
+    STM2 = 0x21,
+    STM3 = 0x22,
+
 Zie main.c `/* USER CODE BEGIN PV */`
 
 
 # Stap 5: Maak een aantal variabelen van main.c zichtbaar door main.h 
 
+```c
+/* USER CODE BEGIN ET */
+#define uart_buff_size 20000
+
+extern const uint8_t device_id;
+extern uint8_t uart_rx_buffer[20000];
+extern uint8_t **uart_pdu_ptr[128];
+extern uint8_t *uart_fast_pdu;
+extern int uart_pdu_wrinting_point;
+extern int uart_current_pdu;
+
+
+/* USER CODE END ET */
+```
+
+Zet deze code dus in de main.h bij `/* USER CODE BEGIN ET */`
+
 Zie main.h `/* USER CODE BEGIN ET */`
  
 # Stap 6: Installeer init code. 
 
-Roep bij de rest van de init functies bij `/* USER CODE BEGIN 2 */` de functie `uart_init_configuration(&huart1)`
+Roep bij de rest van de init functies in main.c bij `/* USER CODE BEGIN 2 */` de functie `uart_init_configuration(&huart1)` aan.
 
 Dit zet de address van de uart bus. En tx lijn uit.
 
 # Stap 7 verander main loop. 
 
- 
+Zet deze code dus in de main while(1) loop in de main.c.
 
 ### Installeer de starter van de uart. 
 
@@ -108,4 +145,12 @@ while (uart_current_pdu != uart_pdu_wrinting_point) {
 
 } 
 ```
- 
+
+
+# Stap 8 implementeer functies.
+
+In procflow.c staat een universele implementatie van send en request bij `void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_HandleTypeDef *usb_uart)`.
+
+Volg hier de comments voor het aanpassen naar de functionaliteit van deze STM. 
+Case 's' is wat de pi naar de stm stuurt voor actuatoren.
+Case 'r' is wat de pi request voor sensoren en hierna wordt met `procflow_send(bus_uart, msg, strlen(msg)` een bericht terug gestuurd.
