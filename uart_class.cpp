@@ -4,7 +4,6 @@
 #include <fcntl.h>                      //Used for UART
 #include <termios.h>                    //Used for UART
 #include <stdint.h>
-#include <expected>
 #include "uart_class.h"
 
 uart_class::uart_class(std::string uart_path) {

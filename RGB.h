@@ -1,19 +1,15 @@
 #ifndef RGB_H
 #define RGB_H
 
+#include "procflow.h"
+#include <string>
 
-#include "ActuatorInterface.h"
-
-class RGB : public ActuatorInterface
+class RGB
 {
-private:
-
-
 public:
     RGB();
-    void sendToActuator(std::string key, std::string value, device_t device) override;
-    void makeRGBMessage(int r, int g, int b);
-
+    void sendToActuator(int r, int g, int b, device_t device);
+    void SendFromColorspace(int value);
 
 private:
 

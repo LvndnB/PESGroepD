@@ -2,16 +2,12 @@
 #define TEMPERATUUR_H
 
 #include "RGB.h"
-#include "SensorInterface.h"
 
-class Temperatuur : public SensorInterface
+class Temperatuur
 {
-private:
-
-
 public:
-    Luchtkwaliteit(RGB* rgbtemp);
-    void requestFromSensor() override;
+    Temperatuur(RGB* rgbtemp);
+    void requestFromSensor();
 
     void temperatureNaarRGB(double temp);
 

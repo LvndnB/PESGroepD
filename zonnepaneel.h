@@ -1,17 +1,23 @@
 #ifndef ZONNEPANEEL_H
 #define ZONNEPANEEL_H
-#include "SensorInterface.h"
 #include "RGB.h"
 
-class Zonnepaneel : public SensorInterface {
+class Zonnepaneel {
 public:
     Zonnepaneel(RGB* rgbLed);
-    void requestFromSensor();  // hoofdlogica
-    float berekenAmpere(float waarde);   // conversie raw → ampère
+    /**
+     * hoofdlogica
+     */
+    void requestFromSensor();
+
+    /**
+     * conversie raw → ampère
+     */
+    float berekenAmpere(float waarde);
     void verwerkMetingen(float waarde);
 
 private:
-    RGB* rgbLed;
+    RGB* rgbLed; // why does this contain  RGB
 };
 
 #endif

@@ -2,23 +2,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include "procflow.h"
 
 
 Ventilator::Ventilator() {}
 
-void Ventilator::sendToActuator(std::string key, std::string value, device_t device) {
+/**
+ * @param speed: 0 < x < 100
+ */
+void Ventilator::sendToActuator(device_t device, int speed) {
     char msg[100];
-    sprintf(msg, "%s=%s", key, value);
-
+    sprintf(msg, "vent=%d", speed);
 
     procflow bus = procflow("/dev/ttyS0");
     bus.sendDataToDevice(device, msg, strlen(msg));
 }
-
-void Ventilator::makeSpeedMessage(int speed) {
-    char speedstring[4];
-    sprintf(speedstring, "%d", speed);
-
-    sendToActuator("ventilator", speedstring, STM1);
-}
-
