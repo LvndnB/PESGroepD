@@ -52,6 +52,6 @@ void Zonnepaneel::verwerkMetingen(float rawValue) {
         g = 255;
         b = 0;
     }
-
-    rgbLed->sendToActuator(r, g, b, STM1);
+    // TODO: retun 
+    // rgbLed->sendToActuator(r, g, b, STM1);
 }

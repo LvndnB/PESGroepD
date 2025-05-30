@@ -1,20 +1,16 @@
 #ifndef TEMPERATUUR_H
 #define TEMPERATUUR_H
 
-#include "RGB.h"
+#include "color.h"
+#include "procflow.h"
 
 class Temperatuur
 {
 public:
-    Temperatuur(RGB* rgbtemp);
-    void requestFromSensor();
-
-    void temperatureNaarRGB(double temp);
-
-private:
-    double temperatuur;
-    RGB* rgbtemp;
-
+    Temperatuur();
+    double requestFromSensor();
+    color requestAsColor(double minimum, double maximum);
+    color temperatureNaarRGB(double value_in, double minimum, double maximum);
 
 };
 

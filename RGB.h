@@ -2,16 +2,17 @@
 #define RGB_H
 
 #include "procflow.h"
-#include <string>
+#include "color.h"
 
 class RGB
 {
 public:
-    RGB();
-    void sendToActuator(int r, int g, int b, device_t device);
+    RGB(device_t device);
+    void sendColorToActuator(color color);
     void SendFromColorspace(int value);
 
 private:
+    device_t device;
 
 };
 

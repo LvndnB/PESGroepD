@@ -4,6 +4,7 @@
 #include <cstring>
 
 #include "RGB.h"
+#include "Temperatuur.h"
 
 int main(int argc, char **argv) {
     procflow bus = procflow("/dev/ttyS0");
@@ -25,10 +26,14 @@ int main(int argc, char **argv) {
             */
 
 
-        RGB rgbtemp;
-        rgbtemp.sendToActuator(255,0,255,STM1);
+        Temperatuur Temperatuursensor;
+        RGB rgbtemp(STM1);
+        // fetch baseline;
+        double baseline = Temperatuursensor.requestFromSensor();
+        sleep(2);
+        rgbtemp.sendColorToActuator(Temperatuursensor.requestAsColor(baseline-0.5, baseline+2)); // Twee grade warmer dan standaard komt niet vaak voor iirc
         sleep(1);
-        rgbtemp.sendToActuator(0,255,255,STM1);
+        rgbtemp.sendColorToActuator(color(0,255,255));
         sleep(1);
         
         //usleep(10000000);
