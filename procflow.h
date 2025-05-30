@@ -36,7 +36,12 @@ class procflow {
     public:
         procflow(std::string uart_path):bus(uart_path) {}
 
+        /**
+         * sync bus user's internal clock to the unix epoch with the accuracy of a decisecond
+         */
         bool syncTime(device_t);
+
         bool sendDataToDevice (device_t device, char *data, int lenght);
+
         rx_request_response requestDataFromDevice(device_t device, sensors_and_actuator_enum sensor);
 };
