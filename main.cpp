@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
         
         servo.update(STM3);
-        usleep(100000);
+        usleep(50000);
 
         //rgbzon.checkRGBSwitch(STM3);
         //rgbzon.sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen

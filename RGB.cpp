@@ -19,7 +19,7 @@ void RGB::checkRGBSwitch(device_t switchDevice)
 {
     procflow bus = procflow("/dev/ttyS0");
 
-    rx_request_response rapport = bus.requestDataFromDevice(switchDevice, deurKnop);
+    rx_request_response rapport = bus.requestDataFromDevice(switchDevice, rgbSwitch);
 
     if (rapport.rapport.error == 0)
     {
