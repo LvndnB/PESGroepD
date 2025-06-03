@@ -137,7 +137,7 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 			sscanf(begin_data, "%20[^=]=%s", key, val);  // parsing van key=value // op de pi moet:	bus.sendDataToDevice(device, "key=value", strlen(key=value));
 
 			if (strcmp(key, "rgb" == 0)) { // hier moet een key ingevuld worden voor de juiste afhandeling van berichten
-				setRGB(val);			// functie in de main.c die aangeroepen moet worden bij deze key
+		//		setRGB(val);			// functie in de main.c die aangeroepen moet worden bij deze key
 			}
 
 			// MOGELIJKE DEBUGGING HIERONDER TOT BREAK
@@ -150,10 +150,10 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 	case 'r': // rpi (R)equest data from stm
 		if (strlen(begin_data) != 0) {
 
-			switch (*data) { // switch case voor de juiste key voor request
+			switch (*begin_data) { // switch case voor de juiste key voor request
 				case 't':	// request temperatuur, kan veranderd worden met een andere key die op de pi procflow.h staat
 
-					char[key] = "temp"; // key die op de pi wordt gebruikt om te controleren of de waarde van temperatuur is
+					//char[key] = "temp"; // key die op de pi wordt gebruikt om te controleren of de waarde van temperatuur is
 					int value;
 					//  <- hier moet de waarde als return van een functie in de main.c (bijv. value = getTemp();)
 
