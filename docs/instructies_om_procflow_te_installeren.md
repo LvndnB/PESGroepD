@@ -137,7 +137,7 @@ while (uart_current_pdu != uart_pdu_wrinting_point) {
 
     uart_current_pdu++; 
 
-    if (uart_current_pdu == 126) { 
+    if (uart_current_pdu == 127) { 
 
         uart_current_pdu = 0; 
 
