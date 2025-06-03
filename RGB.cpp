@@ -7,13 +7,6 @@ int RGB::schakelaarStatus = 0;
 
 RGB::RGB(device_t device) : device(device) {}
 
-/**
- * @param value: min = 0; max= 100
- */
-void RGB::SendFromColorspace(int value)
-{
-    // TODO: implement this
-}
 
 void RGB::checkRGBSchakelaar(device_t schakelaarDevice)
 {
