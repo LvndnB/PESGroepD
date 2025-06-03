@@ -2,16 +2,15 @@
 #define LUCHTKWALITEIT_H
 
 #include "Ventilator.h"
-#include "SensorInterface.h"
 
-class Luchtkwaliteit : public SensorInterface
+class Luchtkwaliteit
 {
 private:
 
 
 public:
     Luchtkwaliteit(Ventilator* ventilator);
-    void requestFromSensor() override;
+    void requestFromSensor();
     void luchtkwaliteitNaarSpeed();
 
 private:

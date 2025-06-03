@@ -4,9 +4,14 @@
 #include <cstring>
 
 #include "RGB.h"
+#include "Temperatuur.h"
+#include "servo.h"
 
 int main(int argc, char **argv) {
     procflow bus = procflow("/dev/ttyS0");
+    Servo servo;
+    RGB rgbzon(STM3);
+
     while (true) {
 
         /*
@@ -24,12 +29,35 @@ int main(int argc, char **argv) {
         }
             */
 
+/*
+        Temperatuur temperatuursensor;
+        RGB rgbtemp(STM1);
+        // fetch baseline;
+        double baseline = temperatuursensor.requestFromSensor();
+        sleep(2);
+        rgbtemp.sendColorToActuator(temperatuursensor.requestAsColor(baseline-0.5, baseline+2)); // Twee graden warmer dan standaard komt niet vaak voor irl
+        sleep(1);
+        rgbtemp.sendColorToActuator(color(0,255,255));
+        sleep(1);
+        */
 
-        RGB rgbtemp;
-        rgbtemp.sendToActuator(255,0,255,STM1);
+        
+        servo.update(STM3);
+        usleep(50000);
+
+        rgbzon.checkRGBSchakelaar(STM3);
+        rgbzon.sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen
         sleep(1);
-        rgbtemp.sendToActuator(0,255,255,STM1);
+        rgbzon.sendColorToActuator(color(255, 0, 255));
         sleep(1);
+
+
+
+        //servo.sendToActuator(STM3, 1); // Deur openen
+        //sleep(1);
+        //servo.sendToActuator(STM3, 0); // Deur sluiten
+        //sleep(1);
+
         
         //usleep(10000000);
     }

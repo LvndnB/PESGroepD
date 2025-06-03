@@ -1,6 +1,10 @@
 #include "Luchtkwaliteit.h"
 #include <cstdio>
 #include <cstdlib>
+#include <stdlib.h>
+#include <string.h>
+
+
 
 
 Luchtkwaliteit::Luchtkwaliteit(Ventilator* ventilator) : ventilator(ventilator) {}
@@ -14,35 +18,35 @@ void Luchtkwaliteit::requestFromSensor() {
     rx_request_response rapport = bus.requestDataFromDevice(STM2, temp);
 
     if (rapport.rapport.error == 0) {
-        std::string key;
-        std::string value;
+        char key[60];
+        char value[60];
         sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
         if (strcmp(key, "temp") == 0){
-            temperatuur = std::atof(value);
+            temperatuur = atof(value);
             sensorCheck++;
         }
         
     }
 
-    rx_request_response rapport = bus.requestDataFromDevice(STM2, co2);
+    rx_request_response co2Request = bus.requestDataFromDevice(STM2, co2);
 
-    if (rapport.rapport.error == 0) {
-        std::string key;
-        std::string value;
-        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+    if (co2Request.rapport.error == 0) {
+        char key[60];
+        char value[60];
+        sscanf(co2Request.msg.get(), "%s[^=]=%s", key, value);
         if (strcmp(key, "co2") == 0){
-            co2value = std::atoi(value);
+            co2value = atoi(value);
             sensorCheck++;
         }
         
     }
 
-    rx_request_response rapport = bus.requestDataFromDevice(STM2, lucht);
+    rx_request_response luchtRequest = bus.requestDataFromDevice(STM2, lucht);
 
-    if (rapport.rapport.error == 0) {
-        std::string key;
-        std::string value;
-        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+    if (luchtRequest.rapport.error == 0) {
+        char key[60];
+        char value[60];
+        sscanf(luchtRequest.msg.get(), "%s[^=]=%s", key, value);
         if (strcmp(key, "lucht") == 0){
             luchtvochtigheid = std::atoi(value);
             sensorCheck++;
@@ -56,8 +60,9 @@ void Luchtkwaliteit::requestFromSensor() {
 
 }
 
-void Luchtkwaliteit::luchtkwaliteitNaarSpeed(){
+void Luchtkwaliteit::luchtkwaliteitNaarSpeed() {
     float score = 0.0;
+
 
     // Normaliseer en bepaal scores tussen 0 en 1
     float tempScore = (temperatuur > 25) ? (temperatuur - 25) / 10.0 : 0;
@@ -67,10 +72,10 @@ void Luchtkwaliteit::luchtkwaliteitNaarSpeed(){
     if (co2Score > 1) co2Score = 1;
 
     float humScore = 0;
-    if (luchtvochtingheid < 30)
-        humScore = (30 - luchtvochtingheid) / 30.0;
-    else if (luchtvochtingheid > 70)
-        humScore = (luchtvochtingheid - 70) / 30.0;
+    if (luchtvochtigheid < 30)
+        humScore = (30 - luchtvochtigheid ) / 30.0;
+    else if (luchtvochtigheid > 70)
+        humScore = (luchtvochtigheid - 70) / 30.0;
 
     if (humScore > 1) humScore = 1;
 
@@ -80,7 +85,7 @@ void Luchtkwaliteit::luchtkwaliteitNaarSpeed(){
     // Schaal naar 0–100
     int snelheid = (int)(score * 100);
 
-    ventilator->makeSpeedMessage(snelheid);
+    ventilator->sendToActuator(STM1, snelheid);
 
 
 }

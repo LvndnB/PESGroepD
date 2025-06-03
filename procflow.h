@@ -20,14 +20,14 @@ typedef enum : uint8_t {
 	klok = 'k',
 	co2 = 'c',
 	temp = 't',
-  zon = 'z',
-  lucht = 'l',
-  vent = 'v',
-  rgbTemp = 't',
-  rgbZon = 'o',
-  deur = 'd',
-  deurKnop = 'q', // onlogisch, aanpassen naar 2 char's
-  rgbKnop = 'e' //Deze ook
+    zon = 'z',
+    lucht = 'l',
+    vent = 'v',
+    rgbTemp = 't',
+    rgbZon = 'o',
+    deur = 'd',
+    deurKnop = 'q', // onlogisch, aanpassen naar 2 char's
+    rgbKnop = 'e' //Deze ook
 } sensors_and_actuator_enum;
 
 class procflow {
@@ -36,7 +36,12 @@ class procflow {
     public:
         procflow(std::string uart_path):bus(uart_path) {}
 
+        /**
+         * sync bus user's internal clock to the unix epoch with the accuracy of a decisecond
+         */
         bool syncTime(device_t);
+
         bool sendDataToDevice (device_t device, char *data, int lenght);
+
         rx_request_response requestDataFromDevice(device_t device, sensors_and_actuator_enum sensor);
 };

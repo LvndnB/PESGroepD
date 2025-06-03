@@ -4,7 +4,6 @@
 #include <fcntl.h>                      //Used for UART
 #include <termios.h>                    //Used for UART
 #include <stdint.h>
-#include <expected>
 #include "uart_class.h"
 
 uart_class::uart_class(std::string uart_path) {
@@ -133,7 +132,7 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
     const int read_size = 100;
     int buff_index = 0;
     int copy_offset = 0;
-    int max_times_outside_of_buff = 10;
+    int max_times_outside_of_buff = 40;
 
     enum {
         finding_start,
@@ -165,6 +164,9 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
 
         for (int i = 0; i < rx_length; i++) {
 
+            printf("rx[%d]: %d (%c)\r\n",i, buff[buff_index+i], buff[buff_index+i]);
+
+
             if (state == finding_end &&
                     buff[buff_index+i] == 0) {
                 buff[buff_index+i-copy_offset] = 0;
@@ -182,7 +184,7 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
 
             if (
                     state == finding_start &&
-                    buff[buff_index+i] == 2
+                    buff[buff_index+i] == '!'
                ) {
                 buff_index -= rx_length; // to counteract the first ++
 

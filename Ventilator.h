@@ -1,20 +1,18 @@
 #ifndef VENTILATOR_H
 #define VENTILATOR_H
 
+#include "procflow.h"
 
-#include "ActuatorInterface.h"
-
-class Ventilator : public ActuatorInterface
+class Ventilator 
 {
 private:
 
 
 public:
     Ventilator();
-    void sendToActuator(std::string key, std::string value, device_t device) override;
-    void makeSpeedMessage(int speed);
 
-private:
+    void sendToActuator(device_t device, int speed);
+
 
 };
 
