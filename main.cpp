@@ -10,7 +10,7 @@
 int main(int argc, char **argv) {
     procflow bus = procflow("/dev/ttyS0");
     Servo servo;
-    RGB rgbzon(STM3);
+    //RGB rgbzon(STM3);
 
     while (true) {
 
@@ -43,13 +43,13 @@ int main(int argc, char **argv) {
 
         
         servo.update(STM3);
-        usleep(50000);
+        usleep(100000);
 
-        rgbzon.checkRGBSchakelaar(STM3);
-        rgbzon.sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen
-        sleep(1);
-        rgbzon.sendColorToActuator(color(255, 0, 255));
-        sleep(1);
+        //rgbzon.checkRGBSwitch(STM3);
+        //rgbzon.sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen
+        //sleep(1);
+        //rgbzon.sendColorToActuator(color(255, 0, 255));
+        //sleep(1);
 
 
 

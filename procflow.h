@@ -27,7 +27,7 @@ typedef enum : uint8_t {
     rgbZon = 'o',
     deur = 'd',
     deurKnop = 'q', // onlogisch, aanpassen naar 2 char's
-    rgbKnop = 'e' //Deze ook
+    rgbSwitch = 'e' //Deze ook
 } sensors_and_actuator_enum;
 
 class procflow {

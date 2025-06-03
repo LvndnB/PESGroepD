@@ -3,16 +3,23 @@
 #include <cstdlib>
 #include <cstring>
 
-int RGB::schakelaarStatus = 0;
+int RGB::switchStatus = 0;
 
 RGB::RGB(device_t device) : device(device) {}
 
+/**
+ * @param value: min = 0; max= 100
+ */
+void RGB::SendFromColorspace(int value)
+{
+    // TODO: implement this
+}
 
-void RGB::checkRGBSchakelaar(device_t schakelaarDevice)
+void RGB::checkRGBSwitch(device_t switchDevice)
 {
     procflow bus = procflow("/dev/ttyS0");
 
-    rx_request_response rapport = bus.requestDataFromDevice(schakelaarDevice, deurKnop);
+    rx_request_response rapport = bus.requestDataFromDevice(switchDevice, deurKnop);
 
     if (rapport.rapport.error == 0)
     {
@@ -20,12 +27,14 @@ void RGB::checkRGBSchakelaar(device_t schakelaarDevice)
         char value[40];
         sscanf(rapport.msg.get(), "%[^=]=%s", key, value);
 
-        if (strcmp(key, "deurKnop") == 0)//moet veranderd worden naar rgbSchakelaar
+        if (strcmp(key, "rgbSwitch") == 0)//moet veranderd worden naar rgbSchakelaar
         {
 
-            schakelaarStatus = std::atoi(value);
+            switchStatus = std::atoi(value);
         }
     }
+
+    /* PRINTF VOOR DEBUGGING
 
     printf("done rx with return %d\r\n\r\n", rapport.rapport.error);
     for (int i = 0; i < rapport.rapport.recieved_bytes; i++)
@@ -33,7 +42,9 @@ void RGB::checkRGBSchakelaar(device_t schakelaarDevice)
         printf("msg[%d]: %c\r\n", i, rapport.msg.get()[i]);
     }
 
-    if (!schakelaarStatus)
+    */
+
+    if (!switchStatus)
     {
         
         color color(0, 0, 0);
@@ -45,14 +56,12 @@ void RGB::checkRGBSchakelaar(device_t schakelaarDevice)
 
         procflow bus = procflow("/dev/ttyS0");
         bus.sendDataToDevice(device, msg, strlen(msg));
-
-        printf("%s\n", msg);
     }
 }
 
 void RGB::sendColorToActuator(color color)
 {
-    if (schakelaarStatus)
+    if (switchStatus)
     {
         printf("Sending color to actuator: %d %d %d\r\n", color.r, color.g, color.b);
         color.normalize();
@@ -62,7 +71,5 @@ void RGB::sendColorToActuator(color color)
 
         procflow bus = procflow("/dev/ttyS0");
         bus.sendDataToDevice(device, msg, strlen(msg));
-
-        printf("%s\n", msg);
     }
 }
