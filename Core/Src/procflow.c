@@ -17,7 +17,7 @@
 
 #include "main.h"
 #include "procflow.h"
-
+#include "stm32_tm1637.h"
 /***
  * This functions writes the prefered setting to the correct registers. And it is preferdly called in
  * stm32l4xx_hal_msp.c. But for refactoring purposes it is currently called in the main function. (So i do not forget)
@@ -109,6 +109,7 @@ void handle_charactor_match_interupt(DMA_HandleTypeDef *hdma_usartx_rx, UART_Han
 }
 
 uint64_t co2value = 0;
+float tempvalue = 0;
 
 /**
  * It is called in the main while and handles request send from master.
@@ -133,11 +134,25 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 		HAL_Delay(40);
 		char key[99]  = "";
 		char val[99] = "";
-		if (strlen(begin_data)!= 0) { // WARNING when copying. Make sure that the nullbyte is also send.
+		if (strlen(begin_data)!= 0) { // WARNING: when copying. Make sure that the nullbyte is also send.
 			sscanf(begin_data, "%20[^=]=%s", key, val);  // parsing van key=value // op de pi moet:	bus.sendDataToDevice(device, "key=value", strlen(key=value));
 
-			if (strcmp(key, "rgb" == 0)) { // hier moet een key ingevuld worden voor de juiste afhandeling van berichten
-		//		setRGB(val);			// functie in de main.c die aangeroepen moet worden bij deze key
+			if (strcmp(key, "tim") == 0) {
+
+				if (val[0] == ':') { // display int without colum (:).
+					tm1637SetBrightness(7);
+					tm1637DisplayDecimal(atoi(val+1), 0);
+
+				} else if (val[0] == '|') { // display int colum (:)
+					tm1637SetBrightness(7);
+					tm1637DisplayDecimal(atoi(val+1), 2);
+
+				} else if (val[0] == 'f') { // display float
+					double value = atof(val+1);
+					int valueAsInt = value * 100; // move decemal
+					tm1637DisplayDecimal(valueAsInt, 2); // display with colum as dot
+				}
+
 			}
 
 			// MOGELIJKE DEBUGGING HIERONDER TOT BREAK
@@ -154,13 +169,12 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 				case 't':	// request temperatuur, kan veranderd worden met een andere key die op de pi procflow.h staat
 
 					//char[key] = "temp"; // key die op de pi wordt gebruikt om te controleren of de waarde van temperatuur is
-					int value;
 					//  <- hier moet de waarde als return van een functie in de main.c (bijv. value = getTemp();)
 
 					
 					uint8_t msg[100]; // Hier komt de key=value in te staan voor de response
-					
-					sprintf(msg, "%s=%d", key, value); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+
+					snprintf(msg, 100, "temp=%f", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
 					procflow_send(bus_uart, msg, strlen(msg));
 					break;
 
@@ -183,12 +197,19 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 /**
  * NOT IMPLEMENTED. TODO: implement this
  */
-void procflow_register_float(sensors_and_actuator_enum dev, uint64_t val) {
+void procflow_register_float(sensors_and_actuator_enum dev, float val) {
+	switch (dev) {
+		case temp:
+			tempvalue = val;
+			break;
 
+		case co2: // is int
+			break;
+	}
 }
 
 int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
-	uint8_t startbyte, ascii_start_text = 2; // (ascii start of text. But i'm using it as start of transmission)
+	uint8_t startbyte = '!'; // (ascii start of text. But i'm using it as start of transmission)
 	HAL_UART_Transmit(bus_uart, &startbyte, 1, 1000);
 
 	HAL_UART_Transmit(bus_uart, arr, len, 1000);

@@ -14,5 +14,6 @@ typedef enum {
 } sensors_and_actuator_enum;
 
 void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val);
+void procflow_register_float(sensors_and_actuator_enum dev, float val);
 
 #endif
