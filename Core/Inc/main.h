@@ -45,6 +45,9 @@ extern uint8_t *uart_fast_pdu;
 extern int uart_pdu_wrinting_point;
 extern int uart_current_pdu;
 
+
+extern I2C_HandleTypeDef hi2c1;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

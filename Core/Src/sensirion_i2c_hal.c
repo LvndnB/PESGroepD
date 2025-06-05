@@ -32,6 +32,7 @@
 #include "sensirion_i2c_hal.h"
 #include "sensirion_common.h"
 #include "sensirion_config.h"
+#include "main.h"
 
 /*
  * INSTRUCTIONS
@@ -63,14 +64,14 @@ int16_t sensirion_i2c_hal_select_bus(uint8_t bus_idx) {
  * communication.
  */
 void sensirion_i2c_hal_init(void) {
-    /* TODO:IMPLEMENT */
+    /* NAH i do it the init in main.c*/
 }
 
 /**
  * Release all resources initialized by sensirion_i2c_hal_init().
  */
 void sensirion_i2c_hal_free(void) {
-    /* TODO:IMPLEMENT or leave empty if no resources need to be freed */
+    /* leave empty if no resources need to be freed */
 }
 
 /**
@@ -84,8 +85,11 @@ void sensirion_i2c_hal_free(void) {
  * @returns 0 on success, error code otherwise
  */
 int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint8_t count) {
-    /* TODO:IMPLEMENT */
-    return STATUS_FAIL;
+	HAL_StatusTypeDef status =  HAL_I2C_Master_Receive(&hi2c1, address, data, count, 700);
+	if (status != HAL_OK) {
+		return STATUS_FAIL;
+	}
+    return STATUS_OK;
 }
 
 /**
@@ -101,8 +105,12 @@ int8_t sensirion_i2c_hal_read(uint8_t address, uint8_t* data, uint8_t count) {
  */
 int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data,
                                uint8_t count) {
-    /* TODO:IMPLEMENT */
-    return STATUS_FAIL;
+	HAL_StatusTypeDef status =  HAL_I2C_Master_Transmit(&hi2c1, address, data, count, 700);
+
+	if (status != HAL_OK) {
+		return STATUS_FAIL;
+	}
+    return STATUS_OK;
 }
 
 /**
@@ -114,5 +122,5 @@ int8_t sensirion_i2c_hal_write(uint8_t address, const uint8_t* data,
  * @param useconds the sleep time in microseconds
  */
 void sensirion_i2c_hal_sleep_usec(uint32_t useconds) {
-    /* TODO:IMPLEMENT */
+	HAL_Delay(useconds);
 }
