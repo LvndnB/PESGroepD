@@ -27,47 +27,50 @@ void RGB::checkRGBSwitch(device_t switchDevice)
         char value[40];
         sscanf(rapport.msg.get(), "%[^=]=%s", key, value);
 
-        if (strcmp(key, "rgbSwitch") == 0)//moet veranderd worden naar rgbSchakelaar
+        if (strcmp(key, "rgbSwitch") == 0)
         {
 
             switchStatus = std::atoi(value);
+            printf("Switch status: %d\r\n", switchStatus);
         }
     }
 
-    /* PRINTF VOOR DEBUGGING
 
-    printf("done rx with return %d\r\n\r\n", rapport.rapport.error);
-    for (int i = 0; i < rapport.rapport.recieved_bytes; i++)
-    {
-        printf("msg[%d]: %c\r\n", i, rapport.msg.get()[i]);
-    }
-
-    */
-
-    if (!switchStatus)
-    {
-        
-        color color(0, 0, 0);
-        color.normalize();
-
-        char msg[100];
-        sprintf(msg, "rgb=#%02X%02X%02X", color.r, color.g, color.b);
-
-
-        procflow bus = procflow("/dev/ttyS0");
-        bus.sendDataToDevice(device, msg, strlen(msg));
-    }
+    
 }
 
 void RGB::sendColorToActuator(color color)
 {
+    if (!switchStatus && rgbStatus)
+    {
+        
+    
+
+        char msg[100];
+        sprintf(msg, "rgb=#000000");
+
+
+        procflow bus = procflow("/dev/ttyS0");
+        bus.sendDataToDevice(device, msg, strlen(msg));
+
+        rgbStatus = 0;
+    }
+
+
     if (switchStatus)
     {
-        printf("Sending color to actuator: %d %d %d\r\n", color.r, color.g, color.b);
+        //printf("Sending color to actuator: %d %d %d\r\n", color.r, color.g, color.b);
         color.normalize();
 
         char msg[100];
         sprintf(msg, "rgb=#%02X%02X%02X", color.r, color.g, color.b);
+
+        if (!rgbStatus)
+        {
+            rgbStatus = 1;
+        }
+        
+  
 
         procflow bus = procflow("/dev/ttyS0");
         bus.sendDataToDevice(device, msg, strlen(msg));

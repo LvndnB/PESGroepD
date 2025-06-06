@@ -42,6 +42,7 @@ bool procflow::syncTime(device_t device) {
 }
 
 bool procflow::sendDataToDevice(device_t device, char *data, int lenght) {
+    printf("Sending data to device %d: %s\r\n", device, data);
     uint8_t pdu_part[] = {'s', device};
     bus.send(pdu_part, 2);   
     bus.send(data, lenght);

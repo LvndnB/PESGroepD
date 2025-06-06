@@ -14,6 +14,7 @@ public:
 
 private:
     static int switchStatus;
+    int rgbStatus = 0; // 0 = off, 1 = on
     device_t device;
 
 };

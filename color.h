@@ -9,7 +9,7 @@ class color {
         color():r(0),g(0),b(0) {
         };
 
-        color(int r, int g, int b):r(r),g(g),b(b) {
+        color(int r, int g, int b):g(g),r(r),b(b) {
         }
 
         color* normalize() {

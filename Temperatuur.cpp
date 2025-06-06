@@ -16,7 +16,7 @@ double Temperatuur::requestFromSensor() {
     if (rapport.rapport.error == 0) {
         char key[20];
         char value[40];
-        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+        sscanf(rapport.msg.get(), "%[^=]=%s", key, value);
         if (strcmp(key, "temp") == 0){
               return std::atof(value); 
         }
@@ -35,6 +35,8 @@ color Temperatuur::requestAsColor(double minimum, double maximum) {
 color Temperatuur::temperatureNaarRGB(double value_in, double minimum, double maximum) {
     if (value_in < minimum) value_in = minimum;
     if (value_in > maximum) value_in = maximum;
+
+    printf("tempvalues: %f (min: %f, max %f, %% %f)\r\n", value_in, minimum, maximum, (value_in-minimum)/(maximum-minimum));
 
     // Temp schaal 18-24C naar 2700-6500K
     const int kelvin = 2700 + (24.0 - value_in) * 633;

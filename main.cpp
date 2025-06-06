@@ -2,17 +2,59 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstring>
+#include <vector>
 
 #include "RGB.h"
 #include "Temperatuur.h"
 #include "servo.h"
+#include "klok.h"
+#include "SocketClient.h"
+#include "Ventilator.h"
+#include "zonnepaneel.h"
+#include "Luchtkwaliteit.h"
 
 int main(int argc, char **argv) {
     procflow bus = procflow("/dev/ttyS0");
     Servo servo;
-    //RGB rgbzon(STM3);
+    std::vector<RGB> rgbLeds = {
+        RGB(STM1), // RGB voor temperatuur
+        RGB(STM3)  // RGB voor zonnepaneel
+    };	
+    Zonnepaneel zonnepaneel(&rgbLeds[1]);
+    Zevensegmentendisplay clock(STM2);
+    Temperatuur temperatuursensor;
+    Ventilator ventilator;
+    Luchtkwaliteit luchtkwaliteit(&ventilator);
 
     while (true) {
+        // ------------------------------------------------------------------------------------
+
+        // HIERONDER STAAT DE CONCEPT MAIN LOOP VAN HET PROGRAMMA //
+
+
+        //clock.updateToCurrentTime();
+
+        rgbLeds[1].checkRGBSwitch(STM1);
+
+        usleep(50000);
+
+        zonnepaneel.requestFromSensor(); // stuurt RGB zon aan
+
+        //rgbLeds[0].sendColorToActuator(temperatuursensor.requestAsColor(20, 24)); // stuurt RGB temperatuur aan
+
+        //luchtkwaliteit.requestFromSensor();
+        
+        //servo.update(STM3);
+
+        usleep(50000);
+
+
+
+        // ------------------------------------------------------------------------------------
+
+
+
+
 
         /*
         rx_request_response rapport = bus.requestDataFromDevice(STM3, co2);
@@ -29,37 +71,67 @@ int main(int argc, char **argv) {
         }
             */
 
-/*
-        Temperatuur temperatuursensor;
-        RGB rgbtemp(STM1);
+
         // fetch baseline;
+
+        /*
+        clock.updateToCurrentTime();
         double baseline = temperatuursensor.requestFromSensor();
-        sleep(2);
-        rgbtemp.sendColorToActuator(temperatuursensor.requestAsColor(baseline-0.5, baseline+2)); // Twee graden warmer dan standaard komt niet vaak voor irl
-        sleep(1);
-        rgbtemp.sendColorToActuator(color(0,255,255));
-        sleep(1);
+        rgbzon.sendColorToActuator(color(0,0,0));
+        usleep(400);
+        rgbzon.sendColorToActuator(color(255,255,255));
+        usleep(400);
+        rgbzon.sendColorToActuator(color(0,0,0));
+        usleep(400);
+        rgbzon.sendColorToActuator(color(255,255,255));
+        usleep(400);
+        rgbzon.sendColorToActuator(color(0,0,0));
+        sleep(3);
+        rgbzon.sendColorToActuator(temperatuursensor.requestAsColor(baseline-0.5, baseline+2)); // Twee graden warmer dan standaard komt niet vaak voor irl
+        sleep(4);
         */
+        
 
         
-        servo.update(STM3);
+        //servo.update(STM3);
+        //usleep(50000);
+
+
+/*
+        rgbLeds[0].checkRGBSwitch(STM1);
         usleep(50000);
-
-        //rgbzon.checkRGBSwitch(STM3);
-        //rgbzon.sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen
-        //sleep(1);
-        //rgbzon.sendColorToActuator(color(255, 0, 255));
-        //sleep(1);
-
-
+        rgbLeds[0].sendColorToActuator(color(0, 255, 0)); // Standaard kleur groen
+        rgbLeds[1].sendColorToActuator(color(255, 0, 255));
+        sleep(1);
+        rgbLeds[0].sendColorToActuator(color(255, 0, 255));
+        rgbLeds[1].sendColorToActuator(color(0, 255, 0));
+        sleep(1);
+*/
 
         //servo.sendToActuator(STM3, 1); // Deur openen
         //sleep(1);
         //servo.sendToActuator(STM3, 0); // Deur sluiten
         //sleep(1);
 
+
+
+        /*
+        SocketClient client;
+        char message[100];
+        sprintf(message, "TEMPLOG=20");
+        client.send("192.168.0.101", 12345, message);
+        SocketClient client1;
+        sprintf(message, "CO2LOG=445");
+        client1.send("192.168.0.101", 12345, message);
+        SocketClient client2;
+        sprintf(message, "LUCHTVOCHTIGHEIDLOG=31");
+        client2.send("192.168.0.101", 12345, message);
+        SocketClient client3;
+        sprintf(message, "ZONNEPANEELLOG=20.50");
+        client3.send("192.168.0.101", 12345, message);
+        sleep(1);
+        */
         
-        //usleep(10000000);
     }
 }
 

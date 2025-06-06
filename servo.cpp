@@ -26,12 +26,12 @@ void Servo::checkServoKnop(device_t device) {
               knopStatus = std::atoi(value);
         }
     }
-
+/*
     printf("done rx with return %d\r\n\r\n", rapport.rapport.error);
     for (int i = 0; i < rapport.rapport.recieved_bytes; i++) {
         printf("msg[%d]: %c\r\n",i, rapport.msg.get()[i]);
     }
-
+*/
 
 
 }

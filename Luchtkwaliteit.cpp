@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <stdlib.h>
 #include <string.h>
+#include "SocketClient.h"
 
 
 
@@ -24,7 +25,13 @@ void Luchtkwaliteit::requestFromSensor() {
         if (strcmp(key, "temp") == 0){
             temperatuur = atof(value);
             sensorCheck++;
+
+            SocketClient client;
+            char message[100];
+            sprintf(message, "TEMPLOG=%.1f", temperatuur);
+            client.send("192.168.0.101", 12345, message);
         }
+        
         
     }
 
@@ -37,6 +44,11 @@ void Luchtkwaliteit::requestFromSensor() {
         if (strcmp(key, "co2") == 0){
             co2value = atoi(value);
             sensorCheck++;
+
+            SocketClient client;
+            char message[100];
+            sprintf(message, "CO2LOG=%d", co2value);
+            client.send("192.168.0.101", 12345, message);
         }
         
     }
@@ -50,6 +62,11 @@ void Luchtkwaliteit::requestFromSensor() {
         if (strcmp(key, "lucht") == 0){
             luchtvochtigheid = std::atoi(value);
             sensorCheck++;
+
+            SocketClient client;
+            char message[100];
+            sprintf(message, "LUCHTVOCHTIGHEIDLOG=%d", luchtvochtigheid);
+            client.send("192.168.0.101", 12345, message);
         }
         
     }
