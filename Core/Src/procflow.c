@@ -110,6 +110,7 @@ void handle_charactor_match_interupt(DMA_HandleTypeDef *hdma_usartx_rx, UART_Han
 
 uint64_t co2value = 0;
 float tempvalue = 0;
+float humidityValue = 0;
 
 /**
  * It is called in the main while and handles request send from master.
@@ -127,6 +128,8 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 	uint8_t *Device_id = uart_pdu_ptr[pdu_index];
 	uint8_t method = Device_id[-1];
 	uint8_t *begin_data = Device_id+1;
+
+	uint8_t response_buffer[100];
 
 	switch (method) {
 
@@ -171,16 +174,22 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 					//char[key] = "temp"; // key die op de pi wordt gebruikt om te controleren of de waarde van temperatuur is
 					//  <- hier moet de waarde als return van een functie in de main.c (bijv. value = getTemp();)
 
-					
-					uint8_t msg[100]; // Hier komt de key=value in te staan voor de response
-
-					snprintf(msg, 100, "temp=%f", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
-					procflow_send(bus_uart, msg, strlen(msg));
+					snprintf(response_buffer, 100, "temp=%f", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+					procflow_send(bus_uart, response_buffer, strlen(response_buffer));
 					break;
 
 				case 'c': // request co2 value
+
+
+					snprintf(response_buffer, 100, "co2=%d", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+					procflow_send(bus_uart, response_buffer, strlen(response_buffer));
 					break;
 				}
+
+				case 'v':
+					snprintf(response_buffer, 100, "lucht=%f", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+					procflow_send(bus_uart, response_buffer, strlen(response_buffer));
+					break;
 
 				bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transmitter
 				break;
@@ -202,10 +211,21 @@ void procflow_register_float(sensors_and_actuator_enum dev, float val) {
 		case temp:
 			tempvalue = val;
 			break;
+		case hum:
+			humidityValue = val;
 
 		case co2: // is int
 			break;
 	}
+}
+
+/**
+ * This registers unsigned 64 bit values to be send by the `r` method. For sensors (co2)
+ * NOT IMPLEMENTED. TODO: implement this
+ */
+void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val) {
+
+	co2value = val;
 }
 
 int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
@@ -221,11 +241,4 @@ int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
 	return 1; // TODO ack
 }
 
-/**
- * This registers unsigned 64 bit values to be send by the `r` method. For sensors (co2)
- * NOT IMPLEMENTED. TODO: implement this
- */
-void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val) {
 
-	co2value = val;
-}

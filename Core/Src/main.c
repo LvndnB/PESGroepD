@@ -55,6 +55,7 @@
 ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c3;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -72,6 +73,8 @@ uint8_t *uart_fast_pdu = 0;
 int uart_pdu_wrinting_point = 0;
 int uart_current_pdu = 0;
 
+int sensor_value = 0;
+
 
 /* USER CODE END PV */
 
@@ -83,6 +86,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2C3_Init(void);
 /* USER CODE BEGIN PFP */
 bool MX_sht3x_init();
 
@@ -95,7 +99,7 @@ bool MX_sht3x_init();
 // Init voor de SGP30 Sensor
 void SGP30_Init(void) {
 	uint8_t command[] = CMD_INIT_AIR_QUALITY;
-	HAL_I2C_Master_Transmit(&hi2c1, SGP30_ADDRESS, command, sizeof(command), 100);
+	HAL_I2C_Master_Transmit(&hi2c3, SGP30_ADDRESS, command, sizeof(command), 100);
 }
 
 // Aflezen waarden CO2 sensor
@@ -103,9 +107,9 @@ uint16_t SGP30_ReadCO2(void) {
 	uint8_t command[] = CMD_MEASURE_AIR_QUALITY;
 	uint8_t buffer[6];  // Data buffer (CO₂eq, TVOC)
 
-	HAL_I2C_Master_Transmit(&hi2c1, SGP30_ADDRESS, command, sizeof(command), 100);
-	HAL_Delay(12);  // Sensor heeft 12ms nodig voor meting
-	HAL_I2C_Master_Receive(&hi2c1, SGP30_ADDRESS, buffer, sizeof(buffer), 100);
+	HAL_I2C_Master_Transmit(&hi2c3, SGP30_ADDRESS, command, sizeof(command), 100);
+	HAL_Delay(12);
+	HAL_I2C_Master_Receive(&hi2c3, SGP30_ADDRESS, buffer, sizeof(buffer), 100);
 
 	uint16_t co2_value = (buffer[0] << 8) | buffer[1];  // Omzetten bytes naar enkele 16-bit waarden
 	return co2_value;
@@ -118,11 +122,12 @@ void UART_Print(const char *str) {
 uint8_t SGP30_CheckConnection(void) {
 	uint8_t command[] = CMD_GET_FEATURES;
 	uint8_t response[3] = {0};
-	HAL_StatusTypeDef status =  HAL_I2C_Master_Transmit(&hi2c1, SGP30_ADDRESS, command, sizeof(command), HAL_MAX_DELAY);
+	HAL_StatusTypeDef status =  HAL_I2C_Master_Transmit(&hi2c3, SGP30_ADDRESS, command, sizeof(command), 100);
 	if ( status != HAL_OK) {
 		return 0;  // Sensor reageert niet
 	}
-	if (HAL_I2C_Master_Receive(&hi2c1, SGP30_ADDRESS, response, sizeof(response), 100) != HAL_OK) {
+
+	if (HAL_I2C_Master_Receive(&hi2c3, SGP30_ADDRESS, response, sizeof(response), 100) != HAL_OK) {
 		return 0;  // Geen respons ontvangen
 	}
 
@@ -165,19 +170,18 @@ int main(void)
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
+  MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
 	// Als sensor niet gevonden, stop
   MX_sht3x_init();
   tm1637Init();
 
-//	while (!SGP30_CheckConnection()) {
-
-//		UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
-//		HAL_Delay(100);
-//	}
+	while (!SGP30_CheckConnection() ) {
+		UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
+		HAL_Delay(100);
+	}
 
 	// Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
-	UART_Print("CO2 sensor gedetecteerd!\r\n");
 	SGP30_Init();
 
 
@@ -191,7 +195,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	long int loopcounter = 0;
-	int sensor_value = 0;
 	while (1)
 	{
 
@@ -212,10 +215,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		sensor_value = SGP30_ReadCO2();
-		char uart_buffer[50];
-		long int len = snprintf(uart_buffer, sizeof(uart_buffer), "%-2d CO2: %d ppm\r\n", loopcounter, sensor_value);
-		HAL_UART_Transmit(&huart2, (uint8_t*)uart_buffer, len, HAL_MAX_DELAY);
-		HAL_Delay(100);
+		procflow_register_u64(co2, sensor_value);
+		HAL_Delay(1);
 		loopcounter++;
 
 		float temperature, humidity = 0;
@@ -223,7 +224,7 @@ int main(void)
 
 		if (success) {
 			procflow_register_float(temp, temperature);
-		//	procflow_register_float(humidity, humidity);
+			procflow_register_float(hum, humidity);
 		}
 	}
   /* USER CODE END 3 */
@@ -363,7 +364,7 @@ static void MX_I2C1_Init(void)
 
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00707CBB;
+  hi2c1.Init.Timing = 0x6010C7FF;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -392,6 +393,54 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief I2C3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C3_Init(void)
+{
+
+  /* USER CODE BEGIN I2C3_Init 0 */
+
+  /* USER CODE END I2C3_Init 0 */
+
+  /* USER CODE BEGIN I2C3_Init 1 */
+
+  /* USER CODE END I2C3_Init 1 */
+  hi2c3.Instance = I2C3;
+  hi2c3.Init.Timing = 0x00707CBB;
+  hi2c3.Init.OwnAddress1 = 0;
+  hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c3.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c3.Init.OwnAddress2 = 0;
+  hi2c3.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c3.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c3.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c3, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c3, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C3_Init 2 */
+
+  /* USER CODE END I2C3_Init 2 */
 
 }
 
@@ -524,7 +573,7 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 bool MX_sht3x_init() {
-	sht3x1.i2c_handle = &hi2c1;
+	sht3x1.i2c_handle = &hi2c3;
 	sht3x1.device_address = 0x44;
 	//sht3x1.device_address = ;
 

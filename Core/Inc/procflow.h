@@ -10,7 +10,8 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 typedef enum {
 	klok = 'k',
 	co2 = 'c',
-	temp = 't'
+	temp = 't',
+	hum = 'l'
 } sensors_and_actuator_enum;
 
 void procflow_register_u64(sensors_and_actuator_enum dev, uint64_t val);

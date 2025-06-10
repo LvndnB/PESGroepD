@@ -17,8 +17,8 @@ void _tm1637DioLow(void);
 
 #define CLK_PORT GPIOA
 #define DIO_PORT GPIOB
-#define CLK_PIN GPIO_PIN_0
-#define DIO_PIN GPIO_PIN_12
+#define CLK_PIN GPIO_PIN_12
+#define DIO_PIN GPIO_PIN_0
 #define CLK_PORT_CLK_ENABLE __HAL_RCC_GPIOA_CLK_ENABLE
 #define DIO_PORT_CLK_ENABLE __HAL_RCC_GPIOA_CLK_ENABLE
 
@@ -34,6 +34,7 @@ void tm1637Init(void)
 {
     CLK_PORT_CLK_ENABLE();
     DIO_PORT_CLK_ENABLE();
+
     GPIO_InitTypeDef g = {0};
     g.Pull = GPIO_PULLUP;
     g.Mode = GPIO_MODE_OUTPUT_OD; // OD = open drain

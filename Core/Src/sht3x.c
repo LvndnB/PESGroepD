@@ -37,7 +37,7 @@ static uint8_t calculate_crc(const uint8_t *data, size_t length)
 static bool sht3x_send_command(sht3x_handle_t *handle, sht3x_command_t command)
 {
 	uint8_t command_buffer[2] = {(command & 0xff00u) >> 8u, command & 0xffu};
-
+	HAL_Delay(1);
 	if (HAL_I2C_Master_Transmit(handle->i2c_handle, handle->device_address << 1u, command_buffer, sizeof(command_buffer),
 	                            SHT3X_I2C_TIMEOUT) != HAL_OK) {
 		return false;
@@ -63,6 +63,7 @@ bool sht3x_init(sht3x_handle_t *handle)
 	if ( res != HAL_OK) {
 		return false;
 	}
+	HAL_I2C_ERROR_AF;
 
 	uint8_t calculated_crc = calculate_crc(status_reg_and_checksum, 2);
 
