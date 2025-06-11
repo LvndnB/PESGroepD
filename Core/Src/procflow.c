@@ -108,7 +108,7 @@ void handle_charactor_match_interupt(DMA_HandleTypeDef *hdma_usartx_rx, UART_Han
 	}
 }
 
-uint64_t co2value = 0;
+uint32_t co2value = 0;
 float tempvalue = 0;
 float humidityValue = 0;
 
@@ -134,7 +134,7 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 	switch (method) {
 
 	case 's': // Rpi has (S)end data to stm
-		HAL_Delay(40);
+		HAL_Delay(20);
 		char key[99]  = "";
 		char val[99] = "";
 		if (strlen(begin_data)!= 0) { // WARNING: when copying. Make sure that the nullbyte is also send.
@@ -181,15 +181,16 @@ void procflow_handle_pdu(int pdu_index, UART_HandleTypeDef *bus_uart, UART_Handl
 				case 'c': // request co2 value
 
 
-					snprintf(response_buffer, 100, "co2=%d", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+					snprintf(response_buffer, 100, "co2=%lu", co2value); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
 					procflow_send(bus_uart, response_buffer, strlen(response_buffer));
 					break;
-				}
 
-				case 'v':
-					snprintf(response_buffer, 100, "lucht=%f", tempvalue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
+
+				case 'l':
+					snprintf(response_buffer, 100, "lucht=%f", humidityValue); // hier wordt de key=value string gemaakt die naar de pi wordt gestuurd
 					procflow_send(bus_uart, response_buffer, strlen(response_buffer));
 					break;
+			}
 
 				bus_uart->Instance->CR1 &= ~USART_CR1_TE_Msk; // disable transmitter
 				break;
@@ -236,7 +237,7 @@ int procflow_send(UART_HandleTypeDef *bus_uart, uint8_t *arr, int len) {
 
 	uint8_t endbyte = 0;
 	HAL_UART_Transmit(bus_uart, &endbyte, 1, 1000);
-	HAL_Delay(10);
+
 
 	return 1; // TODO ack
 }
