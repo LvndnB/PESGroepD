@@ -173,8 +173,10 @@ int main(void)
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
 	// Als sensor niet gevonden, stop
+  uart_init_configuration(&huart1);
   MX_sht3x_init();
   tm1637Init();
+  HAL_UART_Receive_DMA(&huart1, uart_rx_buffer, uart_buff_size);
 
 
 	// Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
@@ -182,7 +184,6 @@ int main(void)
 
 
 
-	uart_init_configuration(&huart1);
 
 
 
@@ -202,7 +203,7 @@ int main(void)
 			procflow_handle_pdu(uart_current_pdu, &huart1, &huart2);
 
 			uart_current_pdu++;
-			if (uart_current_pdu == 126) {
+			if (uart_current_pdu == 127) {
 				uart_current_pdu = 0;
 			}
 
