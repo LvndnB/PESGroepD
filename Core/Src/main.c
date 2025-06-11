@@ -176,10 +176,6 @@ int main(void)
   MX_sht3x_init();
   tm1637Init();
 
-	while (!SGP30_CheckConnection() ) {
-		UART_Print("ERROR: CO2 sensor niet gevonden!\r\n");
-		HAL_Delay(100);
-	}
 
 	// Als sensor gevonden, print en wacht 15 sec voor stabielere meetwaarden
 	SGP30_Init();
