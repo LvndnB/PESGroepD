@@ -14,9 +14,9 @@ public:
     void luchtkwaliteitNaarSpeed();
 
 private:
-    double temperatuur;
+    float temperatuur;
     int co2value;
-    int luchtvochtigheid;
+    float luchtvochtigheid;
     Ventilator* ventilator;
 
 

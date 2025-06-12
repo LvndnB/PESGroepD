@@ -33,21 +33,25 @@ color Temperatuur::requestAsColor(double minimum, double maximum) {
 
 
 color Temperatuur::temperatureNaarRGB(double value_in, double minimum, double maximum) {
+    // Clamp waarde binnen bereik
     if (value_in < minimum) value_in = minimum;
     if (value_in > maximum) value_in = maximum;
 
-    printf("tempvalues: %f (min: %f, max %f, %% %f)\r\n", value_in, minimum, maximum, (value_in-minimum)/(maximum-minimum));
+    double percentage = (value_in - minimum) / (maximum - minimum);
+    printf("tempvalues: %f (min: %f, max %f, %% %f)\r\n", value_in, minimum, maximum, percentage);
 
-    // Temp schaal 18-24C naar 2700-6500K
-    const int kelvin = 2700 + (24.0 - value_in) * 633;
+    // Interpoleer Kelvin omgedraaid: laagste waarde is warm (rood), hoogste is koel (wit)
+    const int kelvinMin = 2700; // warm roodachtig
+    const int kelvinMax = 6500; // koel wit
+    const int kelvin = kelvinMin + (1.0 - percentage) * (kelvinMax - kelvinMin); // omgekeerd!
 
-    // Eenvoudige RGB-schatting
-    // TODO: check if this formula holds width differed ranges. Prob not
-    int r = kelvin < 6600 ? 255 : 255 - (kelvin - 6600) / 10;
-    int g = kelvin < 6600 ? (kelvin - 2700) * 255 / 3900 : 255;
-    int b = 5000 < kelvin ?  (kelvin - 5000) * 255 / 1500 : 0;
+    // Bestaande RGB-schatting
+    int r = kelvin < 6600 ? 255 : std::max(0, 255 - (kelvin - 6600) / 10);
+    int g = kelvin < 6600 ? (kelvin - kelvinMin) * 255 / (6600 - kelvinMin) : 255;
+    int b = kelvin > 5000 ? std::min(255, (kelvin - 5000) * 255 / 1500) : 0;
 
-     color c(r,g,b);
-     c.normalize();
-     return c;
+    color c(r, g, b);
+    c.normalize();
+    return c;
 }
+

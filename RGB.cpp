@@ -41,6 +41,8 @@ void RGB::checkRGBSwitch(device_t switchDevice)
 
 void RGB::sendColorToActuator(color color)
 {
+    printf(switchStatus ? "Switch is on\r\n" : "Switch is off\r\n");
+    printf("RGB status: %d\r\n", rgbStatus);
     if (!switchStatus && rgbStatus)
     {
         
@@ -48,6 +50,8 @@ void RGB::sendColorToActuator(color color)
 
         char msg[100];
         sprintf(msg, "rgb=#000000");
+        printf("Switch is off, sending color off message: %s\r\n", msg);
+
 
 
         procflow bus = procflow("/dev/ttyS0");
@@ -64,6 +68,7 @@ void RGB::sendColorToActuator(color color)
 
         char msg[100];
         sprintf(msg, "rgb=#%02X%02X%02X", color.r, color.g, color.b);
+        printf("Sending color message: %s\r\n", msg);
 
         if (!rgbStatus)
         {

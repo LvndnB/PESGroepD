@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include "SocketClient.h"
 
@@ -21,71 +22,97 @@ void Luchtkwaliteit::requestFromSensor() {
     if (rapport.rapport.error == 0) {
         char key[60];
         char value[60];
-        sscanf(rapport.msg.get(), "%s[^=]=%s", key, value);
+        sscanf(rapport.msg.get(), "%[^=]=%s", key, value);
+        //printf("Received key: %s, value: %s\n", key, value);
         if (strcmp(key, "temp") == 0){
             temperatuur = atof(value);
             sensorCheck++;
+            printf("%d\n", sensorCheck);
 
             SocketClient client;
             char message[100];
             sprintf(message, "TEMPLOG=%.1f", temperatuur);
+            printf(message);
             client.send("192.168.0.101", 12345, message);
+
         }
         
         
     }
+    usleep(10000);
+
 
     rx_request_response co2Request = bus.requestDataFromDevice(STM2, co2);
 
     if (co2Request.rapport.error == 0) {
         char key[60];
         char value[60];
-        sscanf(co2Request.msg.get(), "%s[^=]=%s", key, value);
+        sscanf(co2Request.msg.get(), "%[^=]=%s", key, value);
+        //printf("Received key: %s, value: %s\n", key, value);
         if (strcmp(key, "co2") == 0){
             co2value = atoi(value);
             sensorCheck++;
+            printf("%d\n", sensorCheck);
 
             SocketClient client;
             char message[100];
             sprintf(message, "CO2LOG=%d", co2value);
+            printf(message);
             client.send("192.168.0.101", 12345, message);
+
         }
+            
         
     }
+
+    usleep(10000);
 
     rx_request_response luchtRequest = bus.requestDataFromDevice(STM2, lucht);
 
     if (luchtRequest.rapport.error == 0) {
         char key[60];
         char value[60];
-        sscanf(luchtRequest.msg.get(), "%s[^=]=%s", key, value);
+        sscanf(luchtRequest.msg.get(), "%[^=]=%s", key, value);
+        //printf("Received key: %s, value: %s\n", key, value);
         if (strcmp(key, "lucht") == 0){
-            luchtvochtigheid = std::atoi(value);
+            luchtvochtigheid = std::atof(value);
             sensorCheck++;
+            printf("%d\n", sensorCheck);
 
+            
             SocketClient client;
             char message[100];
-            sprintf(message, "LUCHTVOCHTIGHEIDLOG=%d", luchtvochtigheid);
+            sprintf(message, "LUCHTVOCHTIGHEIDLOG=%.1f", luchtvochtigheid);
+            printf(message);
             client.send("192.168.0.101", 12345, message);
+            
         }
         
     }
+    usleep(10000);
+
+    
 
     if (sensorCheck == 3){
         luchtkwaliteitNaarSpeed();
     }
 
+    
+
 }
 
 void Luchtkwaliteit::luchtkwaliteitNaarSpeed() {
+    printf("Luchtkwaliteit: Temp: %.1f, CO2: %d, Luchtvochtigheid: %.1f\r\n", temperatuur, co2value, luchtvochtigheid);
     float score = 0.0;
 
 
     // Normaliseer en bepaal scores tussen 0 en 1
-    float tempScore = (temperatuur > 25) ? (temperatuur - 25) / 10.0 : 0;
+    float tempScore = (temperatuur < 25) ? 0.0f : 
+                  (temperatuur > 28) ? 1.0f : 
+                  (temperatuur - 25) / 2.0f;
     if (tempScore > 1) tempScore = 1;
 
-    float co2Score = (float)co2value / 1200.0;  //  max 1200 ppm
+    float co2Score = (float)(co2value - 400) / 200.0f; // CO2 waarde normaal is 400 ppm, en we willen dat boven 600 ppm een score van 1 geeft
     if (co2Score > 1) co2Score = 1;
 
     float humScore = 0;
@@ -101,6 +128,8 @@ void Luchtkwaliteit::luchtkwaliteitNaarSpeed() {
 
     // Schaal naar 0–100
     int snelheid = (int)(score * 100);
+
+    printf("Luchtkwaliteit score: %.2f\r\n", score);
 
     ventilator->sendToActuator(STM1, snelheid);
 

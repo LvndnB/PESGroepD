@@ -132,7 +132,7 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
     const int read_size = 100;
     int buff_index = 0;
     int copy_offset = 0;
-    int max_times_outside_of_buff = 40;
+    int max_times_outside_of_buff = 5;
 
     enum {
         finding_start,
@@ -164,7 +164,7 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
 
         for (int i = 0; i < rx_length; i++) {
 
-            printf("rx[%d]: %d (%c)\r\n",i, buff[buff_index+i], buff[buff_index+i]);
+            //printf("rx[%d]: %d (%c)\r\n",i, buff[buff_index+i], buff[buff_index+i]);
 
 
             if (state == finding_end &&
