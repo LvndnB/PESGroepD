@@ -4,13 +4,17 @@
 
 STM1::STM1(){}
 
+double STM1::getLuchtkwaliteit(){
+    // luchtkwaliteitLogger->log("Temperatuu: " + temperatuur + "CO2: " + co2 + "Luchtvochtigheid: " + luchtvochtigheid);
+    handleTemperatureRGB(temperatuur);
+}
 
 void STM1::handleTemperatureRGB(double temperature) {
     if (temperature < 18.0) temperature = 18.0;
     if (temperature > 24.0) temperature = 24.0;
 
     // Temp schaal 18–24°C naar 2700–6500K
-    int kelvin = 2700 + (24.0 - temperature) * 633;
+    int kelvin = 2700 + (temperature - 18.0) * 633; // (6500-2700)/6 ≈ 633
 
     // Eenvoudige RGB-schatting
     int r = kelvin < 6600 ? 255 : 255 - (kelvin - 6600) / 10;

@@ -7,7 +7,7 @@
 
 #define BUFFER_SIZE 1024
 
-SocketServer::SocketServer(int port, WemosEncoder* encoder, WemosPulseOxy* pulseoxy) : port(port), encoder(encoder), pulseoxy(pulseoxy) {}
+SocketServer::SocketServer(int port, WemosEncoder* encoder, WemosPulseOxy* pulseoxy, Logger* luchtkwaliteitLog, Logger* zonnepaneelLog) : port(port), encoder(encoder), pulseoxy(pulseoxy), luchtkwaliteitLog(luchtkwaliteitLog), zonnepaneelLog(zonnepaneelLog) {}
 
 void SocketServer::start() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -51,7 +51,16 @@ void SocketServer::start() {
             } else if (sKey == "OXYGEN") {
                 pulseoxy->checkOxy(sValue);
                 // Implementatie van ZUURSTOF bijv naar datalogging
+            } else if (sKey == "TEMPLOG") {
+                luchtkwaliteitLog->log("Temperatuur: " + sValue + " C");
+            } else if (sKey == "CO2LOG") {
+                luchtkwaliteitLog->log("Co2: " + sValue + " ppm");
+            } else if (sKey == "LUCHTVOCHTIGHEIDLOG") {
+                luchtkwaliteitLog->log("Luchtvochtigheid: " + sValue + "%");
+            } else if (sKey == "ZONNEPANEELLOG") {
+                zonnepaneelLog->log("Zonnepaneel: " + sValue + " V");
             }
+            
         }
 
         close(client_fd);

@@ -12,13 +12,15 @@
 int main() {
     Logger encoderLog("encoderLog.log");
     Logger pulseoxyLog("pulseoxyLog.log");
+    Logger luchtkwaliteitLog("luchtkwaliteitLog.log");
+    Logger zonnepaneelLog("zonnepaneelLog.log");
     WemosDLEDenBuzzer dualled(WEMOSDLEDENBUZZER_IP, PORT);
     WemosDLEDenBuzzer buzzer(WEMOSDLEDENBUZZER_IP, PORT);
     WemosEncoder encoder(WEMOSENCODER_IP, PORT, &dualled, &encoderLog);
     WemosPulseOxy pulseoxy(WEMOSPULSEOXY_IP, PORT, &buzzer, &dualled, &pulseoxyLog);
     
 
-    SocketServer server(PORT, &encoder, &pulseoxy);
+    SocketServer server(PORT, &encoder, &pulseoxy, &luchtkwaliteitLog, &zonnepaneelLog);
     server.start();
 
     
