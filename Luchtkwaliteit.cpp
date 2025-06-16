@@ -27,12 +27,12 @@ void Luchtkwaliteit::requestFromSensor() {
         if (strcmp(key, "temp") == 0){
             temperatuur = atof(value);
             sensorCheck++;
-            printf("%d\n", sensorCheck);
+            printf("temp (%d)\n", sensorCheck);
 
             SocketClient client;
             char message[100];
             sprintf(message, "TEMPLOG=%.1f", temperatuur);
-            printf(message);
+            printf("temp:%s", message);
             client.send("192.168.0.101", 12345, message);
 
         }
@@ -52,7 +52,7 @@ void Luchtkwaliteit::requestFromSensor() {
         if (strcmp(key, "co2") == 0){
             co2value = atoi(value);
             sensorCheck++;
-            printf("%d\n", sensorCheck);
+            printf("co2 (%d)\n", sensorCheck);
 
             SocketClient client;
             char message[100];
@@ -73,19 +73,19 @@ void Luchtkwaliteit::requestFromSensor() {
         char key[60];
         char value[60];
         sscanf(luchtRequest.msg.get(), "%[^=]=%s", key, value);
-        //printf("Received key: %s, value: %s\n", key, value);
+        // printf("Received key: %s, value: %s\n", key, value);
         if (strcmp(key, "lucht") == 0){
+
             luchtvochtigheid = std::atof(value);
             sensorCheck++;
-            printf("%d\n", sensorCheck);
+            printf("lucht (%d)\n", sensorCheck);
 
             
             SocketClient client;
             char message[100];
-            sprintf(message, "LUCHTVOCHTIGHEIDLOG=%.1f", luchtvochtigheid);
+            sprintf(message, "LUCHTVOCHTIGHEIDLOG=%.1f", luchtvochtigheid); // SAD
             printf(message);
             client.send("192.168.0.101", 12345, message);
-            
         }
         
     }

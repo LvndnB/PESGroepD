@@ -32,10 +32,11 @@ int main(int argc, char **argv) {
         // HIERONDER STAAT DE CONCEPT MAIN LOOP VAN HET PROGRAMMA //
 
 
+        printf("test clock\r\n");
         clock.updateToCurrentTime();
-        printf("test2\n");
         usleep(50000);
 
+        printf("test switch\r\n");
         rgbLeds[1].checkRGBSwitch(STM1);
 
         usleep(50000);
@@ -44,30 +45,21 @@ int main(int argc, char **argv) {
 
         usleep(50000);
 
+        printf("test temp\r\n");
         rgbLeds[0].sendColorToActuator(temperatuursensor.requestAsColor(25, 29)); // stuurt RGB temperatuur aan
 
+        printf("test sun\r\n");
         usleep(50000);
 
+        printf("test vent\r\n");
         luchtkwaliteit.requestFromSensor(); // ventilator aansturen op basis van luchtkwaliteit
 
         usleep(50000);
         
+        printf("test servo\r\n");
         servo.update(STM3);
 
         usleep(50000);
-
-/*
-    rx_request_response luchtRequest = bus.requestDataFromDevice(STM2, temp);
-    
-    if (luchtRequest.rapport.error == 0) {
-        char key[60];
-        char value[60];
-        sscanf(luchtRequest.msg.get(), "%s[^=]=%s", key, value);
-        if (strcmp(key, "temp") == 0){
-            printf("%s", value);
-        }
-    }
-        */
 
         // ------------------------------------------------------------------------------------
 
