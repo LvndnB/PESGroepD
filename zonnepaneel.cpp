@@ -22,7 +22,6 @@ void Zonnepaneel::requestFromSensor() {
 
         if (strcmp(key, "zon") == 0){
 
-            //printf(value);
             verwerkMetingen(std::atof(value));
               
         }
@@ -37,6 +36,8 @@ float Zonnepaneel::berekenVoltage(float waarde) {
 
 void Zonnepaneel::verwerkMetingen(float rawValue) {
     float stroom = berekenVoltage(rawValue);
+
+    printf("zonwaarde: %f\r\n\r\n", stroom);
 
     SocketClient client;
     char message[100];
