@@ -189,7 +189,6 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
                 buff_index -= rx_length; // to counteract the first ++
 
                 copy_offset = i;
-                buff_index -+ copy_offset;
                 state = finding_end;
             }
 
