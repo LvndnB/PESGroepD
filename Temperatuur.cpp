@@ -4,7 +4,6 @@
 #include <string.h>
 
 
-
 Temperatuur::Temperatuur() {}
 
 
@@ -23,14 +22,12 @@ double Temperatuur::requestFromSensor() {
         
     }
     return -200; // error
-
 }
 
 
 color Temperatuur::requestAsColor(double minimum, double maximum) {
     return temperatureNaarRGB(requestFromSensor(), minimum, maximum);
 }
-
 
 color Temperatuur::temperatureNaarRGB(double value_in, double minimum, double maximum) {
     // Clamp waarde binnen bereik

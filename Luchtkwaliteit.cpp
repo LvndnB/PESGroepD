@@ -124,8 +124,4 @@ void Luchtkwaliteit::luchtkwaliteitNaarSpeed() {
     printf("Luchtkwaliteit score: %.2f\r\n", score);
 
     ventilator->sendToActuator(STM1, snelheid);
-
-
 }
-
-
