@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['socketclient_0',['SocketClient',['../classSocketClient.html',1,'']]],
-  ['socketserver_1',['SocketServer',['../classSocketServer.html',1,'']]]
+  ['wemos_0',['Wemos',['../classWemos.html',1,'']]],
+  ['wemosdledenbuzzer_1',['WemosDLEDenBuzzer',['../classWemosDLEDenBuzzer.html',1,'']]],
+  ['wemosencoder_2',['WemosEncoder',['../classWemosEncoder.html',1,'']]],
+  ['wemospulseoxy_3',['WemosPulseOxy',['../classWemosPulseOxy.html',1,'']]]
 ];

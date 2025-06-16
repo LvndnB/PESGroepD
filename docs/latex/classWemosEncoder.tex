@@ -3,24 +3,76 @@
 
 
 Inheritance diagram for Wemos\+Encoder\+:
-% FIG 0
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classWemosEncoder__inherit__graph}
+\end{center}
+\end{figure}
 
 
 Collaboration diagram for Wemos\+Encoder\+:
-% FIG 1
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=172pt]{classWemosEncoder__coll__graph}
+\end{center}
+\end{figure}
 \doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classWemosEncoder_ad43247b51855ba8f903e18b431540424}\label{classWemosEncoder_ad43247b51855ba8f903e18b431540424}} 
-{\bfseries Wemos\+Encoder} (const std\+::string \&ip, int port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$led, \mbox{\hyperlink{classLogger}{Logger}} $\ast$encoder\+Log)
-\item 
-\mbox{\Hypertarget{classWemosEncoder_aaad0fcc3b2babea6dbaafd0f7dae527f}\label{classWemosEncoder_aaad0fcc3b2babea6dbaafd0f7dae527f}} 
-void {\bfseries handle\+RPM} (const std\+::string \&rpm)
-\end{DoxyCompactItemize}
+\mbox{\hyperlink{classWemosEncoder_ad43247b51855ba8f903e18b431540424}{Wemos\+Encoder}} (const std\+::string \&ip, int port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$led, \mbox{\hyperlink{classLogger}{Logger}} $\ast$encoder\+Log)
+\begin{DoxyCompactList}\small\item\em Construct a new \mbox{\hyperlink{classWemosEncoder}{Wemos\+Encoder}}\+:\+: \mbox{\hyperlink{classWemosEncoder}{Wemos\+Encoder}} object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classWemosEncoder_aaad0fcc3b2babea6dbaafd0f7dae527f}{handle\+RPM}} (const std\+::string \&rpm)
+\begin{DoxyCompactList}\small\item\em Check if RPM is \texorpdfstring{$>$}{>} 0, then turn green Dual\+LED on. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classWemosEncoder_ad43247b51855ba8f903e18b431540424}\label{classWemosEncoder_ad43247b51855ba8f903e18b431540424}} 
+\index{WemosEncoder@{WemosEncoder}!WemosEncoder@{WemosEncoder}}
+\index{WemosEncoder@{WemosEncoder}!WemosEncoder@{WemosEncoder}}
+\doxysubsubsection{\texorpdfstring{WemosEncoder()}{WemosEncoder()}}
+{\footnotesize\ttfamily Wemos\+Encoder\+::\+Wemos\+Encoder (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{ip,  }\item[{int}]{port,  }\item[{\mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$}]{led,  }\item[{\mbox{\hyperlink{classLogger}{Logger}} $\ast$}]{encoder\+Log }\end{DoxyParamCaption})}
+
+
+
+Construct a new \mbox{\hyperlink{classWemosEncoder}{Wemos\+Encoder}}\+:\+: \mbox{\hyperlink{classWemosEncoder}{Wemos\+Encoder}} object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ip} & \\
+\hline
+{\em port} & \\
+\hline
+{\em led} & Dual\+LED object \\
+\hline
+{\em encoder\+Log} & Logging object \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classWemosEncoder_aaad0fcc3b2babea6dbaafd0f7dae527f}\label{classWemosEncoder_aaad0fcc3b2babea6dbaafd0f7dae527f}} 
+\index{WemosEncoder@{WemosEncoder}!handleRPM@{handleRPM}}
+\index{handleRPM@{handleRPM}!WemosEncoder@{WemosEncoder}}
+\doxysubsubsection{\texorpdfstring{handleRPM()}{handleRPM()}}
+{\footnotesize\ttfamily void Wemos\+Encoder\+::handle\+RPM (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{rpm }\end{DoxyParamCaption})}
+
+
+
+Check if RPM is \texorpdfstring{$>$}{>} 0, then turn green Dual\+LED on. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rpm} & Encoder RPM \\
+\hline
+\end{DoxyParams}
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
 /home/rpia/\+Documents/pi\+\_\+a/Wemos\+Encoder.\+h\item 
-/home/rpia/\+Documents/pi\+\_\+a/Wemos\+Encoder.\+cpp\end{DoxyCompactItemize}
+/home/rpia/\+Documents/pi\+\_\+a/\mbox{\hyperlink{WemosEncoder_8cpp}{Wemos\+Encoder.\+cpp}}\end{DoxyCompactItemize}

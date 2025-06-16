@@ -1,3 +1,14 @@
+/**
+ * @file SocketServer.cpp
+ * @author PESGroepD
+ * @brief 
+ * @version 0.1
+ * @date 2025-06-16
+ * 
+ * @copyright Copyright (c) 2025
+ * 
+ */
+
 #include "SocketServer.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -7,8 +18,21 @@
 
 #define BUFFER_SIZE 1024
 
+/**
+ * @brief Construct a new SocketServer:: SocketServer object
+ * 
+ * @param port 
+ * @param encoder 
+ * @param pulseoxy 
+ * @param luchtkwaliteitLog 
+ * @param zonnepaneelLog 
+ */
 SocketServer::SocketServer(int port, WemosEncoder* encoder, WemosPulseOxy* pulseoxy, Logger* luchtkwaliteitLog, Logger* zonnepaneelLog) : port(port), encoder(encoder), pulseoxy(pulseoxy), luchtkwaliteitLog(luchtkwaliteitLog), zonnepaneelLog(zonnepaneelLog) {}
 
+/**
+ * @brief Start SocketServer with message redirection to handle functions
+ * 
+ */
 void SocketServer::start() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {

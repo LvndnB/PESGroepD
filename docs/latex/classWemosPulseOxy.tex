@@ -3,27 +3,95 @@
 
 
 Inheritance diagram for Wemos\+Pulse\+Oxy\+:
-% FIG 0
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=178pt]{classWemosPulseOxy__inherit__graph}
+\end{center}
+\end{figure}
 
 
 Collaboration diagram for Wemos\+Pulse\+Oxy\+:
-% FIG 1
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=178pt]{classWemosPulseOxy__coll__graph}
+\end{center}
+\end{figure}
 \doxysubsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{classWemosPulseOxy_aff52ba9d839e084657d1c478f65f86df}\label{classWemosPulseOxy_aff52ba9d839e084657d1c478f65f86df}} 
-{\bfseries Wemos\+Pulse\+Oxy} (const std\+::string \&ip, int port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$buz, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$led, \mbox{\hyperlink{classLogger}{Logger}} $\ast$pulseoxy\+Log)
-\item 
-\mbox{\Hypertarget{classWemosPulseOxy_ae98cc7b5b0b74ec029668b899bd6ed79}\label{classWemosPulseOxy_ae98cc7b5b0b74ec029668b899bd6ed79}} 
-void {\bfseries check\+Oxy} (const std\+::string \&oxy)
-\item 
-\mbox{\Hypertarget{classWemosPulseOxy_a62f05190a9854d47b4c4e63679e67339}\label{classWemosPulseOxy_a62f05190a9854d47b4c4e63679e67339}} 
-void {\bfseries check\+Pulse} (const std\+::string \&pulse)
-\end{DoxyCompactItemize}
+\mbox{\hyperlink{classWemosPulseOxy_aff52ba9d839e084657d1c478f65f86df}{Wemos\+Pulse\+Oxy}} (const std\+::string \&ip, int port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$buz, \mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$led, \mbox{\hyperlink{classLogger}{Logger}} $\ast$pulseoxy\+Log)
+\begin{DoxyCompactList}\small\item\em Construct a new \mbox{\hyperlink{classWemosPulseOxy}{Wemos\+Pulse\+Oxy}}\+:\+: \mbox{\hyperlink{classWemosPulseOxy}{Wemos\+Pulse\+Oxy}} object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classWemosPulseOxy_ae98cc7b5b0b74ec029668b899bd6ed79}{check\+Oxy}} (const std\+::string \&oxy)
+\begin{DoxyCompactList}\small\item\em Possibility to check bloodoxygen and logging. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classWemosPulseOxy_a62f05190a9854d47b4c4e63679e67339}{check\+Pulse}} (const std\+::string \&pulse)
+\begin{DoxyCompactList}\small\item\em Checking heartbeat pulse and handling if to high, turns Dual\+LED red and Buzzer on/off. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Additional Inherited Members}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classWemosPulseOxy_aff52ba9d839e084657d1c478f65f86df}\label{classWemosPulseOxy_aff52ba9d839e084657d1c478f65f86df}} 
+\index{WemosPulseOxy@{WemosPulseOxy}!WemosPulseOxy@{WemosPulseOxy}}
+\index{WemosPulseOxy@{WemosPulseOxy}!WemosPulseOxy@{WemosPulseOxy}}
+\doxysubsubsection{\texorpdfstring{WemosPulseOxy()}{WemosPulseOxy()}}
+{\footnotesize\ttfamily Wemos\+Pulse\+Oxy\+::\+Wemos\+Pulse\+Oxy (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{ip,  }\item[{int}]{port,  }\item[{\mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$}]{buz,  }\item[{\mbox{\hyperlink{classWemosDLEDenBuzzer}{Wemos\+DLEDen\+Buzzer}} $\ast$}]{led,  }\item[{\mbox{\hyperlink{classLogger}{Logger}} $\ast$}]{pulseoxy\+Log }\end{DoxyParamCaption})}
+
+
+
+Construct a new \mbox{\hyperlink{classWemosPulseOxy}{Wemos\+Pulse\+Oxy}}\+:\+: \mbox{\hyperlink{classWemosPulseOxy}{Wemos\+Pulse\+Oxy}} object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ip} & \\
+\hline
+{\em port} & \\
+\hline
+{\em buz} & Buzzer object \\
+\hline
+{\em led} & Dual\+LED object \\
+\hline
+{\em pulseoxy\+Log} & Logging object \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classWemosPulseOxy_ae98cc7b5b0b74ec029668b899bd6ed79}\label{classWemosPulseOxy_ae98cc7b5b0b74ec029668b899bd6ed79}} 
+\index{WemosPulseOxy@{WemosPulseOxy}!checkOxy@{checkOxy}}
+\index{checkOxy@{checkOxy}!WemosPulseOxy@{WemosPulseOxy}}
+\doxysubsubsection{\texorpdfstring{checkOxy()}{checkOxy()}}
+{\footnotesize\ttfamily void Wemos\+Pulse\+Oxy\+::check\+Oxy (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{oxy\+String }\end{DoxyParamCaption})}
+
+
+
+Possibility to check bloodoxygen and logging. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em oxy\+String} & Oxygen value in string \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classWemosPulseOxy_a62f05190a9854d47b4c4e63679e67339}\label{classWemosPulseOxy_a62f05190a9854d47b4c4e63679e67339}} 
+\index{WemosPulseOxy@{WemosPulseOxy}!checkPulse@{checkPulse}}
+\index{checkPulse@{checkPulse}!WemosPulseOxy@{WemosPulseOxy}}
+\doxysubsubsection{\texorpdfstring{checkPulse()}{checkPulse()}}
+{\footnotesize\ttfamily void Wemos\+Pulse\+Oxy\+::check\+Pulse (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{pulse\+String }\end{DoxyParamCaption})}
+
+
+
+Checking heartbeat pulse and handling if to high, turns Dual\+LED red and Buzzer on/off. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pulse\+String} & Heartbeat pulse in string \\
+\hline
+\end{DoxyParams}
 
 
 The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
 \item 
 /home/rpia/\+Documents/pi\+\_\+a/Wemos\+Pulse\+Oxy.\+h\item 
-/home/rpia/\+Documents/pi\+\_\+a/Wemos\+Pulse\+Oxy.\+cpp\end{DoxyCompactItemize}
+/home/rpia/\+Documents/pi\+\_\+a/\mbox{\hyperlink{WemosPulseOxy_8cpp}{Wemos\+Pulse\+Oxy.\+cpp}}\end{DoxyCompactItemize}

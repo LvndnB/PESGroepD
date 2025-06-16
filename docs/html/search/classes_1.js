@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['rgb_0',['RGB',['../classRGB.html',1,'']]]
+  ['socketclient_0',['SocketClient',['../classSocketClient.html',1,'']]],
+  ['socketserver_1',['SocketServer',['../classSocketServer.html',1,'']]]
 ];
