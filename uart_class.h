@@ -43,6 +43,7 @@ class uart_class {
         int send(void *buff, int size);
 
         /** 
+         * @deprecated
          * receive a predetermined size of bytes.
          *
          * Warning this function assumes that all data can be fit in the given buffer
@@ -59,7 +60,12 @@ class uart_class {
         } uart_rx_rapport;
 
         /**
-         * receive a none deterministic size of data
+         * this reads a buffer of unkown size from the uart line. The data should be send quickly on the line after this function is called.
+         * The data should start with ! and end width NULL
+         *
+         * @param buff: the buffer that is written to.
+         * @param size: max size able to be received.
+         * 
          */
         uart_class::uart_rx_rapport receive_null_termenated(char *buff, int size);
 };
