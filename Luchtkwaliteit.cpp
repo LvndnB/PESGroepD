@@ -39,7 +39,7 @@ void Luchtkwaliteit::requestFromSensor() {
         
         
     }
-    usleep(10000);
+    usleep(30000);
 
 
     rx_request_response co2Request = bus.requestDataFromDevice(STM2, co2);
@@ -64,8 +64,7 @@ void Luchtkwaliteit::requestFromSensor() {
             
         
     }
-
-    usleep(10000);
+    usleep(32000);
 
     rx_request_response luchtRequest = bus.requestDataFromDevice(STM2, lucht);
 
@@ -87,18 +86,11 @@ void Luchtkwaliteit::requestFromSensor() {
             printf(message);
             client.send("192.168.0.101", 12345, message);
         }
-        
     }
-    usleep(10000);
 
-    
-
-    if (sensorCheck == 3){
+    // if (sensorCheck == 3){
         luchtkwaliteitNaarSpeed();
-    }
-
-    
-
+    // }
 }
 
 void Luchtkwaliteit::luchtkwaliteitNaarSpeed() {
