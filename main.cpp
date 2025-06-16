@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         usleep(35000);
         
         printf("test sun\r\n");
-        zonnepaneel.requestFromSensor(); // stuurt RGB zon aan
+        zonnepaneel.update(); // stuurt RGB zon aan
         usleep(50000);
 
         printf("test vent\r\n");

@@ -8,7 +8,7 @@
 Zonnepaneel::Zonnepaneel(RGB* rgbLed) : rgbLed(rgbLed) {
 }
 
-void Zonnepaneel::requestFromSensor() {
+void Zonnepaneel::update() {
   procflow bus = procflow("/dev/ttyS0");
 
   rx_request_response rapport = bus.requestDataFromDevice(STM1, zon);
