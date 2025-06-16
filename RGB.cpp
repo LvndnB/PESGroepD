@@ -7,14 +7,6 @@ int RGB::switchStatus = 0;
 
 RGB::RGB(device_t device) : device(device) {}
 
-/**
- * @param value: min = 0; max= 100
- */
-void RGB::SendFromColorspace(int value)
-{
-    // TODO: implement this
-}
-
 void RGB::checkRGBSwitch(device_t switchDevice)
 {
     procflow bus = procflow("/dev/ttyS0");
