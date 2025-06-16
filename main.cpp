@@ -34,28 +34,23 @@ int main(int argc, char **argv) {
 
         printf("test clock\r\n");
         clock.updateToCurrentTime();
-        usleep(50000);
-
+        usleep(400);
         printf("test switch\r\n");
         rgbLeds[1].checkRGBSwitch(STM1);
-
-        usleep(50000);
-
-        zonnepaneel.requestFromSensor(); // stuurt RGB zon aan
-
-        usleep(50000);
-
+        usleep(35000);
+        
         printf("test temp\r\n");
         rgbLeds[0].sendColorToActuator(temperatuursensor.requestAsColor(25, 29)); // stuurt RGB temperatuur aan
-
+        usleep(35000);
+        
         printf("test sun\r\n");
+        zonnepaneel.requestFromSensor(); // stuurt RGB zon aan
         usleep(50000);
 
         printf("test vent\r\n");
         luchtkwaliteit.requestFromSensor(); // ventilator aansturen op basis van luchtkwaliteit
-
-        usleep(50000);
         
+
         printf("test servo\r\n");
         servo.update(STM3);
 
