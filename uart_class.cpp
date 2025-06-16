@@ -84,7 +84,6 @@ enum recvErr {
     nothing_recv,
 };
 
-/// @Depricated
 int uart_class::receive(void *buff, int size)
 {
     char *buff_ptr = (char *) buff;
@@ -124,15 +123,16 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
     if (fd == -1)
     {
         uart_rx_rapport rapport;
-        rapport.error = -20192;
-        rapport.msg = "ee";
+        rapport.error = 400;
+        rapport.msg = "there is an error in the file";
         rapport.recieved_bytes = 0;
     }
 
-    const int read_size = 100;
+    const int read_size = 40;
     int buff_index = 0;
     int copy_offset = 0;
-    int max_times_outside_of_buff = 5;
+    int max_times_outside_of_buff = 10;
+    int max_times_inside_of_buff = 10;
 
     enum {
         finding_start,
@@ -164,7 +164,9 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
 
         for (int i = 0; i < rx_length; i++) {
 
-            //printf("rx[%d]: %d (%c)\r\n",i, buff[buff_index+i], buff[buff_index+i]);
+#ifdef debug_uart
+            printf("rx[%d]: %d (%c)\r\n",i, buff[buff_index+i], buff[buff_index+i]);
+#endif
 
 
             if (state == finding_end &&
@@ -214,20 +216,36 @@ uart_class::uart_rx_rapport uart_class::receive_null_termenated(char *buff, int 
             }
         }
 
-        if (state == finding_end) { // overwrite start of buffer if msg is not starded
+        if (state == finding_end) { // overwrite start of buffer if msg is not started
             buff_index += rx_length;
         }
 
-        // TODO: change readsize to allow for closer reads
-        if (buff_index > size - read_size) { // prevent buffer offerflow
+        if (buff_index > size - read_size) { // prevent buffer overflow
             buff[buff_index] = 0;
             uart_rx_rapport error;
             error.error = 2;
-            error.msg = "A timeout has accured.";
+            error.msg = "Buffer overflow prevention";
             error.recieved_bytes = buff_index;
 
             return error;
 
+
+        }
+
+        if (rx_length == 0 ) {
+            if (finding_end) {
+                max_times_inside_of_buff--;
+
+                if (max_times_inside_of_buff <= 0)
+                {
+                    uart_rx_rapport error;
+                    error.error = 3;
+                    error.msg = "A timeout has accured.";
+                    error.recieved_bytes = buff_index;
+
+                    return error;
+                }
+            }
 
         }
     }

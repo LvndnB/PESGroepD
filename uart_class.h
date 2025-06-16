@@ -44,9 +44,11 @@ class uart_class {
 
         /** 
          * @deprecated
+         * use receive_null_termenated
+         *
          * receive a predetermined size of bytes.
          *
-         * Warning this function assumes that all data can be fit in the given buffer
+         * @Warning this function assumes that all data can be fit in the given buffer
          *
          * @param buff the location to be written.
          * @param size aspected size of bytes to be received
@@ -54,8 +56,25 @@ class uart_class {
         int receive(void *buff, int size);
 
         typedef struct {
+            /** errorcode
+             * 0: no error
+             * 1: timeout waiting for msg
+             * 2: buffer overflow prevention. (NULL byte inserted)
+             * 2: other weird timeout
+             * 400: file descriptor malformed
+             * negative: errno (man errno)
+             */
             int error;
+
+            /**
+             * erromsg to be printed
+             */
             std::string msg;
+
+            /**
+             * size of msg. 
+             * if error 2 and 3 is set. The contents may be valid but please validate:.
+             */
             int recieved_bytes;
         } uart_rx_rapport;
 
