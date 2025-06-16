@@ -1,0 +1,28 @@
+\hypertarget{SocketServer_8h_source}{}\doxysection{/home/rpia/\+Documents/pi\+\_\+a/\+Socket\+Server.h}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef SOCKETSERVER\_H}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define SOCKETSERVER\_H}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}WemosEncoder.h"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}WemosPulseOxy.h"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}Logger.h"{}}}
+\DoxyCodeLine{8 }
+\DoxyCodeLine{9 }
+\DoxyCodeLine{10 \textcolor{keyword}{class }\mbox{\hyperlink{classSocketServer}{SocketServer}} \{}
+\DoxyCodeLine{11 \textcolor{keyword}{private}:}
+\DoxyCodeLine{12     \textcolor{keywordtype}{int} port;}
+\DoxyCodeLine{13     \mbox{\hyperlink{classWemosEncoder}{WemosEncoder}}* encoder;}
+\DoxyCodeLine{14     \mbox{\hyperlink{classWemosPulseOxy}{WemosPulseOxy}}* pulseoxy;}
+\DoxyCodeLine{15     \mbox{\hyperlink{classLogger}{Logger}}* luchtkwaliteitLog;}
+\DoxyCodeLine{16     \mbox{\hyperlink{classLogger}{Logger}}* zonnepaneelLog;}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{keyword}{public}:}
+\DoxyCodeLine{19     \mbox{\hyperlink{classSocketServer}{SocketServer}}(\textcolor{keywordtype}{int} port, \mbox{\hyperlink{classWemosEncoder}{WemosEncoder}}* encoder, \mbox{\hyperlink{classWemosPulseOxy}{WemosPulseOxy}}* pulseoxy, \mbox{\hyperlink{classLogger}{Logger}}* luchtkwaliteitLog, \mbox{\hyperlink{classLogger}{Logger}}* zonnepaneelLog);}
+\DoxyCodeLine{20     \textcolor{keywordtype}{void} start();}
+\DoxyCodeLine{21 \};}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

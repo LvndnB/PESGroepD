@@ -1,0 +1,25 @@
+\hypertarget{WemosDLEDenBuzzer_8h_source}{}\doxysection{/home/rpia/\+Documents/pi\+\_\+a/\+Wemos\+DLEDen\+Buzzer.h}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef WEMOSDLEDENBUZZER\_H}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define WEMOSDLEDENBUZZER\_H}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}Wemos.h"{}}}
+\DoxyCodeLine{6 }
+\DoxyCodeLine{7 \textcolor{keyword}{class }\mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}} : \textcolor{keyword}{public} \mbox{\hyperlink{classWemos}{Wemos}} \{}
+\DoxyCodeLine{8 \textcolor{keyword}{public}:}
+\DoxyCodeLine{9     \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}(\textcolor{keyword}{const} std::string\& ip, \textcolor{keywordtype}{int} port);}
+\DoxyCodeLine{10     \textcolor{keywordtype}{void} aan(\textcolor{keyword}{const} std::string\& kleur);}
+\DoxyCodeLine{11     \textcolor{keywordtype}{void} uit(\textcolor{keyword}{const} std::string\& kleur);}
+\DoxyCodeLine{12     \textcolor{keywordtype}{void} buzzer(\textcolor{keywordtype}{int} status);}
+\DoxyCodeLine{13     \textcolor{keywordtype}{bool} isAan(\textcolor{keyword}{const} std::string\& kleur);}
+\DoxyCodeLine{14 }
+\DoxyCodeLine{15 \textcolor{keyword}{private}:}
+\DoxyCodeLine{16     \textcolor{keywordtype}{bool} ledgroenstatus = \textcolor{keyword}{false};}
+\DoxyCodeLine{17     \textcolor{keywordtype}{bool} ledroodstatus = \textcolor{keyword}{false};}
+\DoxyCodeLine{18 \};}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,23 @@
+\hypertarget{WemosEncoder_8h_source}{}\doxysection{/home/rpia/\+Documents/pi\+\_\+a/\+Wemos\+Encoder.h}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef WEMOSENCODER\_H}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define WEMOSENCODER\_H}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}Wemos.h"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}WemosDLEDenBuzzer.h"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}Logger.h"{}}}
+\DoxyCodeLine{8 }
+\DoxyCodeLine{9 \textcolor{keyword}{class }\mbox{\hyperlink{classWemosEncoder}{WemosEncoder}} : \textcolor{keyword}{public} \mbox{\hyperlink{classWemos}{Wemos}} \{}
+\DoxyCodeLine{10 \textcolor{keyword}{private}:}
+\DoxyCodeLine{11 \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* dualled;}
+\DoxyCodeLine{12 \mbox{\hyperlink{classLogger}{Logger}}* encoderLog;}
+\DoxyCodeLine{13 \textcolor{keyword}{public}:}
+\DoxyCodeLine{14     \mbox{\hyperlink{classWemosEncoder}{WemosEncoder}}(\textcolor{keyword}{const} std::string\& ip, \textcolor{keywordtype}{int} port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* led, \mbox{\hyperlink{classLogger}{Logger}}* encoderLog);}
+\DoxyCodeLine{15     \textcolor{keywordtype}{void} handleRPM(\textcolor{keyword}{const} std::string\& rpm);}
+\DoxyCodeLine{16 \};}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

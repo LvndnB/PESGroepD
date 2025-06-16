@@ -1,0 +1,30 @@
+\hypertarget{WemosPulseOxy_8h_source}{}\doxysection{/home/rpia/\+Documents/pi\+\_\+a/\+Wemos\+Pulse\+Oxy.h}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef WEMOSPULSEOXY\_H}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define WEMOSPULSEOXY\_H}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include "{}Wemos.h"{}}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}WemosDLEDenBuzzer.h"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}Logger.h"{}}}
+\DoxyCodeLine{7 }
+\DoxyCodeLine{8 \textcolor{keyword}{class }\mbox{\hyperlink{classWemosPulseOxy}{WemosPulseOxy}} : \textcolor{keyword}{public} \mbox{\hyperlink{classWemos}{Wemos}} \{}
+\DoxyCodeLine{9     \textcolor{keyword}{private}:}
+\DoxyCodeLine{10     \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* buzzer;}
+\DoxyCodeLine{11     \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* dualled;}
+\DoxyCodeLine{12     \mbox{\hyperlink{classLogger}{Logger}}* pulseoxyLog;}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14     \textcolor{keywordtype}{int} pulse;}
+\DoxyCodeLine{15     \textcolor{keywordtype}{int} alarm = 0;}
+\DoxyCodeLine{16     \textcolor{keywordtype}{int} pulsegrenswaarde = 90;}
+\DoxyCodeLine{17 }
+\DoxyCodeLine{18     \textcolor{keyword}{public}:}
+\DoxyCodeLine{19     \mbox{\hyperlink{classWemosPulseOxy}{WemosPulseOxy}}(\textcolor{keyword}{const} std::string\&ip, \textcolor{keywordtype}{int} port, \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* buz, \mbox{\hyperlink{classWemosDLEDenBuzzer}{WemosDLEDenBuzzer}}* led, \mbox{\hyperlink{classLogger}{Logger}}* pulseoxyLog);}
+\DoxyCodeLine{20     \textcolor{keywordtype}{void} checkOxy(\textcolor{keyword}{const} std::string\& oxy);}
+\DoxyCodeLine{21     \textcolor{keywordtype}{void} checkPulse(\textcolor{keyword}{const} std::string\& pulse);}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 \};}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

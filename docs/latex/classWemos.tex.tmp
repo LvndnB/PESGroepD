@@ -1,0 +1,30 @@
+\hypertarget{classWemos}{}\doxysection{Wemos Class Reference}
+\label{classWemos}\index{Wemos@{Wemos}}
+
+
+Inheritance diagram for Wemos\+:
+% FIG 0
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classWemos_a003a6355e4df5aa55a89613a1fa9b52a}\label{classWemos_a003a6355e4df5aa55a89613a1fa9b52a}} 
+{\bfseries Wemos} (const std\+::string \&ip, int port)
+\item 
+\mbox{\Hypertarget{classWemos_a756e590dc20a88bd34457e2abbd823a2}\label{classWemos_a756e590dc20a88bd34457e2abbd823a2}} 
+void {\bfseries make\+Send\+Message} (const std\+::string \&key, const std\+::string \&value)
+\end{DoxyCompactItemize}
+\doxysubsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classWemos_a7d11670633ac52252c5a580e2aa89324}\label{classWemos_a7d11670633ac52252c5a580e2aa89324}} 
+std\+::string {\bfseries ip}
+\item 
+\mbox{\Hypertarget{classWemos_a2cbfd3745f6a2c53c2e3f43d0cd74d5a}\label{classWemos_a2cbfd3745f6a2c53c2e3f43d0cd74d5a}} 
+int {\bfseries port}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/rpia/\+Documents/pi\+\_\+a/Wemos.\+h\item 
+/home/rpia/\+Documents/pi\+\_\+a/Wemos.\+cpp\end{DoxyCompactItemize}
