@@ -51,7 +51,7 @@ color Temperatuur::temperatureNaarRGB(double value_in, double minimum, double ma
     int b = kelvin > 5000 ? std::min(255, (kelvin - 5000) * 255 / 1500) : 0;
 
     color c(r, g, b);
-    c.normalize();
+    c.clamp();
     return c;
 }
 

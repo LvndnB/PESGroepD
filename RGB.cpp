@@ -55,8 +55,7 @@ void RGB::sendColorToActuator(color color)
 
     if (switchStatus)
     {
-        //printf("Sending color to actuator: %d %d %d\r\n", color.r, color.g, color.b);
-        color.normalize();
+        color.clamp();
 
         char msg[100];
         sprintf(msg, "rgb=#%02X%02X%02X", color.r, color.g, color.b);
@@ -66,8 +65,6 @@ void RGB::sendColorToActuator(color color)
         {
             rgbStatus = 1;
         }
-        
-  
 
         procflow bus = procflow("/dev/ttyS0");
         bus.sendDataToDevice(device, msg, strlen(msg));
