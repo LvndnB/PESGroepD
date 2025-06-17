@@ -70,5 +70,4 @@ void SocketServer::start() {
 
     }
     close(server_fd);
-    return;
 }
