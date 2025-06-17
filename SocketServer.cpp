@@ -13,7 +13,7 @@ void SocketServer::start() {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1) {
         perror("Socket fout");
-        return 1;
+        return;
     }
 
     sockaddr_in server_addr{};
@@ -25,7 +25,7 @@ void SocketServer::start() {
         listen(server_fd, 5) < 0) {
         perror("Bind/Luisteren fout");
         close(server_fd);
-        return 1;
+        return;
     }
 
     std::cout << "Server actief op poort " << port << "...\n";
@@ -70,5 +70,5 @@ void SocketServer::start() {
 
     }
     close(server_fd);
-    return 0;
+    return;
 }
