@@ -31,7 +31,6 @@ void Zonnepaneel::requestFromSensor() {
 
 
 float Zonnepaneel::berekenVoltage(float waarde) {
-    // Voorbeeld: raw ADC-waarde (0-4095) omzetten naar stroom in V
     return (waarde / 4095.0f) * 3.3f * 2.0f;   // 3.3V is de referentiespanning, 2.0 is de versterking van de stroom voor de spanningsdeler
 }
 
